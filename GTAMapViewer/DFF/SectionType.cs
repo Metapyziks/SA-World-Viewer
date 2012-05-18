@@ -2,6 +2,7 @@
 {
     internal enum SectionType
     {
+        Null = 0,
         Data = 1,
         String = 2,
         Extension = 3,

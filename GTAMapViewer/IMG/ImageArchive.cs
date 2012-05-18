@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
-using System.Security.Cryptography;
 
-namespace GTAMapViewer
+namespace GTAMapViewer.IMG
 {
     public class ImageArchive
     {
@@ -63,10 +60,12 @@ namespace GTAMapViewer
             }
         }
 
-        public GTAFileStream ReadFile( String name )
+        public FramedStream ReadFile( String name )
         {
             ImageArchiveEntry entry = myDict[ name ];
-            return new GTAFileStream( myStream, entry.Offset, entry.Size );
+            FramedStream stream = new FramedStream( myStream );
+            stream.PushFrame( entry.Offset, entry.Size );
+            return stream;
         }
     }
 }

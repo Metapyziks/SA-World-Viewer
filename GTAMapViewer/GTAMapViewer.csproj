@@ -43,12 +43,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DFF\ClumpSectionData.cs" />
+    <Compile Include="DFF\DataSectionData.cs" />
     <Compile Include="DFF\Section.cs" />
     <Compile Include="DFF\SectionData.cs" />
     <Compile Include="DFF\SectionHeader.cs" />
     <Compile Include="DFF\SectionType.cs" />
-    <Compile Include="GTAFileStream.cs" />
-    <Compile Include="ImageArchive.cs" />
+    <Compile Include="DFF\UnexpectedSectionTypeException.cs" />
+    <Compile Include="FramedStream.cs" />
+    <Compile Include="IMG\ImageArchive.cs" />
     <Compile Include="DFF\Model.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

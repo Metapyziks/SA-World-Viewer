@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 
 namespace GTAMapViewer.DFF
 {
@@ -7,16 +8,21 @@ namespace GTAMapViewer.DFF
         public readonly SectionHeader Header;
         public readonly SectionData Data;
 
-        public Section( Stream stream )
+        public SectionType Type { get { return Header.Type; } }
+
+        public Section( FramedStream stream )
         {
+            stream.PushFrame( 12 );
             Header = new SectionHeader( stream );
-            Data = SectionData.FromStream( Header, stream );
+            stream.PopFrame();
+            stream.PushFrame( Header.Size );
+            Data = SectionData.FromStream( Header,  stream );
+            stream.PopFrame();
         }
 
-        public Section( SectionHeader header, SectionData data )
+        public override string ToString()
         {
-            Header = header;
-            Data = data;
+            return Header.ToString();
         }
     }
 }

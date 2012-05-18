@@ -1,21 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.IO;
 
 namespace GTAMapViewer.DFF
 {
     public class Model
     {
-        private Section[] mySections;
+        private ClumpSectionData[] myClumps;
 
-        public Model( Stream stream )
+        public Model( FramedStream stream )
         {
-            List<Section> sections = new List<Section>();
+            List<ClumpSectionData> clumps = new List<ClumpSectionData>();
             while ( stream.CanRead )
-                sections.Add( new Section( stream ) );
-            mySections = sections.ToArray();
+            {
+                SectionHeader header = new SectionHeader( stream );
+                if ( header.Type == SectionType.Clump )
+                {
+                    ClumpSectionData data = SectionData.FromStream<ClumpSectionData>( header, stream );
+                    clumps.Add( data );
+                }
+            }
+            myClumps = clumps.ToArray();
         }
     }
 }

@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
 using System.Reflection;
 
@@ -40,27 +38,38 @@ namespace GTAMapViewer.DFF
             }
         }
 
-        public static SectionData FromStream( SectionHeader header, Stream stream )
+        public static SectionData FromStream( SectionHeader header, FramedStream stream )
+        {
+            return FromStream<SectionData>( header, stream );
+        }
+
+        public static T FromStream<T>( SectionHeader header, FramedStream stream )
+            where T : SectionData
         {
             if ( myDataTypes == null )
                 FindTypes();
 
-            SectionData data = null;
-            long newPos = stream.Position + header.Size;
-
+            T data = null;
             if ( myDataTypes.ContainsKey( header.Type ) )
             {
                 Type t = myDataTypes[ header.Type ];
-                ConstructorInfo cons = t.GetConstructor( new Type[] { typeof( SectionHeader ), typeof( Stream ) } );
+                ConstructorInfo cons = t.GetConstructor( new Type[] { typeof( SectionHeader ), typeof( FramedStream ) } );
                 if ( cons != null )
-                    data = (SectionData) cons.Invoke( new object[] { header, stream } );
+                {
+                    try
+                    {
+                        data = (T) cons.Invoke( new object[] { header, stream } );
+                    }
+                    catch ( TargetInvocationException e )
+                    {
+                        throw e.InnerException;
+                    }
+                }
             }
-
-            stream.Position = newPos;
-            return null;
+            return data;
         }
 
-        public SectionData( SectionHeader header, Stream stream )
+        public SectionData()
         {
 
         }

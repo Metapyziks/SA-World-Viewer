@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+
+using GTAMapViewer.IMG;
+using GTAMapViewer.DFF;
 
 namespace GTAMapViewer
 {
@@ -10,7 +10,8 @@ namespace GTAMapViewer
         static void Main( string[] args )
         {
             ImageArchive arch = ImageArchive.Load( args[ 0 ] );
-            Console.WriteLine( arch.Version );
+            Console.WriteLine( "Archive Version: {0}", arch.Version );
+            Model bridge_1 = new Model( arch.ReadFile( "bridge_1.dff" ) );
             Console.ReadKey();
         }
     }
