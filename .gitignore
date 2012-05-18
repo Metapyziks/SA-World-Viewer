@@ -1,6 +1,6 @@
 
 GTAMapViewer.suo
-GTAMapViewer/bin
+bin
+data
 GTAMapViewer/obj
-GTAMapViewer/data
 GTAMapViewer/GTAMapViewer.csproj.user

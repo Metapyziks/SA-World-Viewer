@@ -11,7 +11,7 @@ namespace GTAMapViewer
         {
             ImageArchive arch = ImageArchive.Load( args[ 0 ] );
             Console.WriteLine( "Archive Version: {0}", arch.Version );
-            Model bridge_1 = new Model( arch.ReadFile( "bridge_1.dff" ) );
+            Model statue = new Model( arch.ReadFile( "statue.dff" ) );
             Console.ReadKey();
         }
     }

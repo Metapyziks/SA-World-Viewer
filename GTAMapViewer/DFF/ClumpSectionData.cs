@@ -10,6 +10,7 @@ namespace GTAMapViewer.DFF
     internal class ClumpSectionData : SectionData
     {
         public readonly UInt32 ObjectCount;
+        public readonly GeometryListSectionData GeometryList;
 
         public ClumpSectionData( SectionHeader header, FramedStream stream )
         {
@@ -19,12 +20,13 @@ namespace GTAMapViewer.DFF
                 switch ( section.Type )
                 {
                     case SectionType.Data:
-                        DataSectionData data = (DataSectionData) section.Data;
+                        var data = (DataSectionData) section.Data;
                         ObjectCount = BitConverter.ToUInt32( data.Data, 0 );
                         break;
                     case SectionType.FrameList:
                         break;
                     case SectionType.GeometryList:
+                        GeometryList = (GeometryListSectionData) section.Data;
                         break;
                     case SectionType.Atomic:
                         break;
