@@ -4,7 +4,7 @@ using System.IO;
 
 namespace GTAMapViewer.IMG
 {
-    public class ImageArchive
+    internal class ImageArchive
     {
         private struct ImageArchiveEntry
         {
@@ -66,6 +66,13 @@ namespace GTAMapViewer.IMG
             FramedStream stream = new FramedStream( myStream );
             stream.PushFrame( entry.Offset, entry.Size );
             return stream;
+        }
+
+        public DFF.Model LoadModel( String name )
+        {
+            if ( !name.EndsWith( ".dff" ) )
+                name += ".dff";
+            return new DFF.Model( ReadFile( name ) );
         }
     }
 }

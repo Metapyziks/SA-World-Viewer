@@ -40,6 +40,8 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -57,11 +59,21 @@
     <Compile Include="DFF\SectionType.cs" />
     <Compile Include="DFF\UnexpectedSectionTypeException.cs" />
     <Compile Include="FramedStream.cs" />
+    <Compile Include="Graphics\ModelShader.cs" />
+    <Compile Include="Graphics\ShaderBuilder.cs" />
+    <Compile Include="Graphics\ShaderProgram.cs" />
+    <Compile Include="Graphics\Texture.cs" />
+    <Compile Include="Graphics\Texture2D.cs" />
+    <Compile Include="Graphics\Texture2DArray.cs" />
+    <Compile Include="Graphics\VertexBuffer.cs" />
     <Compile Include="IMG\ImageArchive.cs" />
     <Compile Include="DFF\Model.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Scenes\Scene.cs" />
+    <Compile Include="Scenes\ModelViewScene.cs" />
     <Compile Include="Tools.cs" />
+    <Compile Include="ViewerWindow.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

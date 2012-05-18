@@ -1,11 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+
+using GTAMapViewer.Graphics;
 
 namespace GTAMapViewer.DFF
 {
-    public class Model
+    internal class Model : IDisposable
     {
         private ClumpSectionData[] myClumps;
+
+        public VertexBuffer VertexBuffer { get; private set; }
 
         public Model( FramedStream stream )
         {
@@ -20,6 +25,15 @@ namespace GTAMapViewer.DFF
                 }
             }
             myClumps = clumps.ToArray();
+
+            VertexBuffer = new VertexBuffer( 5 );
+            GeometrySectionData geo = myClumps[ 0 ].GeometryList.Geometry[ 0 ];
+            VertexBuffer.SetData( geo.GetVertices(), geo.GetIndices() );
+        }
+
+        public void Dispose()
+        {
+            VertexBuffer.Dispose();
         }
     }
 }

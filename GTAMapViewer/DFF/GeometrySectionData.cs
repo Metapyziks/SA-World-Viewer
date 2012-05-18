@@ -19,16 +19,16 @@ namespace GTAMapViewer.DFF
     internal struct FaceInfo
     {
         public readonly GeometryFlag Flags;
+        public readonly UInt16 Vertex0;
         public readonly UInt16 Vertex1;
         public readonly UInt16 Vertex2;
-        public readonly UInt16 Vertex3;
 
         public FaceInfo( BinaryReader reader )
         {
-            Vertex2 = reader.ReadUInt16();
             Vertex1 = reader.ReadUInt16();
+            Vertex0 = reader.ReadUInt16();
             Flags = (GeometryFlag) reader.ReadUInt16();
-            Vertex3 = reader.ReadUInt16();
+            Vertex2 = reader.ReadUInt16();
         }
     }
 
@@ -78,8 +78,8 @@ namespace GTAMapViewer.DFF
             FaceCount = reader.ReadUInt32();
             VertexCount = reader.ReadUInt32();
             FrameCount = reader.ReadUInt32();
-            
-            if ( header.Version == 4099 )
+
+            if ( dataHeader.Version == 4099 )
             {
                 Ambient = reader.ReadSingle();
                 Diffuse = reader.ReadSingle();
@@ -122,6 +122,35 @@ namespace GTAMapViewer.DFF
                 for ( int i = 0; i < VertexCount; ++i )
                     Normals[ i ] = reader.ReadVector3();
             }
+        }
+
+        public float[] GetVertices()
+        {
+            float[] data = new float[ VertexCount * 5 ];
+            for ( int i = 0; i < VertexCount; ++i )
+            {
+                data[ i * 5 ] = Vertices[ i ].X;
+                data[ i * 5 + 1 ] = Vertices[ i ].Y;
+                data[ i * 5 + 2 ] = Vertices[ i ].Z;
+                if ( TexCoords != null )
+                {
+                    data[ i * 5 + 3 ] = TexCoords[ i ].X;
+                    data[ i * 5 + 4 ] = TexCoords[ i ].Y;
+                }
+            }
+            return data;
+        }
+
+        public ushort[] GetIndices()
+        {
+            ushort[] data = new ushort[ FaceCount * 3 ];
+            for ( int i = 0; i < FaceCount; ++i )
+            {
+                data[ i * 3 ] = Faces[ i ].Vertex0;
+                data[ i * 3 + 1 ] = Faces[ i ].Vertex1;
+                data[ i * 3 + 2 ] = Faces[ i ].Vertex2;
+            }
+            return data;
         }
     }
 }
