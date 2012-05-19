@@ -73,5 +73,10 @@ namespace GTAMapViewer.Resource
         {
 
         }
+
+        public virtual void LoadAdditionalResources()
+        {
+
+        }
     }
 }

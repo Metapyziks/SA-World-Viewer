@@ -31,6 +31,12 @@ namespace GTAMapViewer.Resource
             VertexBuffer.SetData( geo.GetVertices(), geo.GetIndices() );
         }
 
+        public void LoadAdditionalResources()
+        {
+            foreach ( GeometrySectionData geo in myGeometry )
+                geo.LoadAdditionalResources();
+        }
+
         public void Dispose()
         {
             VertexBuffer.Dispose();

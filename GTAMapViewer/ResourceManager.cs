@@ -52,7 +52,8 @@ namespace GTAMapViewer
 
             private Stream myStream;
 
-            private Dictionary<String, ImageArchiveEntry> myDict;
+            private Dictionary<String, ImageArchiveEntry> myFileDict;
+            private Dictionary<String, TextureNativeSectionData> myTextureDict;
 
             public readonly String Version;
             public readonly UInt32 Length;
@@ -65,26 +66,51 @@ namespace GTAMapViewer
                 Version = new String( reader.ReadChars( 4 ) );
                 Length = reader.ReadUInt32();
 
-                myDict = new Dictionary<string, ImageArchiveEntry>();
+                myFileDict = new Dictionary<string, ImageArchiveEntry>();
 
                 for ( int i = 0; i < Length; ++i )
                 {
                     ImageArchiveEntry entry = new ImageArchiveEntry( stream );
-                    myDict.Add( entry.Name, entry );
+                    myFileDict.Add( entry.Name, entry );
+                }
+
+                myTextureDict = new Dictionary<string, TextureNativeSectionData>();
+
+                if ( myFileDict.ContainsKey( "des.txd" ) )
+                    return;
+
+                foreach ( ImageArchiveEntry entry in myFileDict.Values.Where( x => x.Name.EndsWith( ".txd" ) ) )
+                {
+                    FramedStream str = new FramedStream( myStream );
+                    str.PushFrame( entry.Offset, entry.Size );
+                    TextureDictionarySectionData tdic = new Section( str ).Data as TextureDictionarySectionData;
+                    foreach ( TextureNativeSectionData tex in tdic.Textures )
+                        if( !myTextureDict.ContainsKey( tex.DiffuseName ) )
+                            myTextureDict.Add( tex.DiffuseName, tex );
                 }
             }
 
             public bool ContainsFile( String name )
             {
-                return myDict.ContainsKey( name );
+                return myFileDict.ContainsKey( name );
+            }
+
+            public bool ContainsTexture( String name )
+            {
+                return myTextureDict.ContainsKey( name );
             }
 
             public FramedStream ReadFile( String name )
             {
-                ImageArchiveEntry entry = myDict[ name ];
+                ImageArchiveEntry entry = myFileDict[ name ];
                 FramedStream stream = new FramedStream( myStream );
                 stream.PushFrame( entry.Offset, entry.Size );
                 return stream;
+            }
+
+            public Texture2D LoadTexture( String name )
+            {
+                return null;
             }
         }
 
@@ -114,6 +140,7 @@ namespace GTAMapViewer
                     if ( archive.ContainsFile( name ) )
                     {
                         res = new Resource<Model>( new Model( archive.ReadFile( name ) ) );
+                        res.Value.LoadAdditionalResources();
                         break;
                     }
                 }
@@ -136,18 +163,15 @@ namespace GTAMapViewer
 
         public static Texture2D LoadTexture( String name )
         {
-            if ( !name.EndsWith( ".txd" ) )
-                name += ".txd";
-
             Resource<Texture2D> res = null;
 
             if ( !stLoadedTextures.ContainsKey( name ) )
             {
                 foreach ( ImageArchive archive in stLoadedArchives )
                 {
-                    if ( archive.ContainsFile( name ) )
+                    if ( archive.ContainsTexture( name ) )
                     {
-                        res = new Resource<Texture2D>( new Texture2D( archive.ReadFile( name ) ) );
+                        res = new Resource<Texture2D>( archive.LoadTexture( name ) );
                         break;
                     }
                 }

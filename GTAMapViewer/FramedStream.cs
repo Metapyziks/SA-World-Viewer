@@ -99,6 +99,14 @@ namespace GTAMapViewer
             }
         }
 
+        public long GlobalPosition
+        {
+            get
+            {
+                return myStream.Position;
+            }
+        }
+
         public override int Read( byte[] buffer, int offset, int count )
         {
             return myStream.Read( buffer, offset, count );

@@ -9,26 +9,20 @@ namespace GTAMapViewer.Resource
     [SectionType( SectionType.TextureDictionary )]
     internal class TextureDictionarySectionData : SectionData
     {
-        public readonly UInt32 ID;
-        public readonly UInt32 ChunkSize;
-        public readonly UInt32 Marker;
+        public UInt16 TextureCount;
         public TextureNativeSectionData[] Textures;
 
         public TextureDictionarySectionData( SectionHeader header, FramedStream stream )
         {
             SectionHeader dataHeader = new SectionHeader( stream );
+            BinaryReader reader = new BinaryReader( stream );
 
-            List<TextureNativeSectionData> textures = new List<TextureNativeSectionData>();
-            while( stream.CanRead )
-            {
-                Section section = new Section( stream );
-                if ( section.Type == SectionType.TextureNative )
-                    textures.Add( section.Data as TextureNativeSectionData );
-                else
-                    break;
-            }
+            TextureCount = reader.ReadUInt16();
+            Textures = new TextureNativeSectionData[ TextureCount ];
+            reader.ReadUInt16(); // Unknown
 
-            Textures = textures.ToArray();
+            for ( int i = 0; i < TextureCount; ++i )
+                Textures[ i ] = new Section( stream ).Data as TextureNativeSectionData;
         }
     }
 }

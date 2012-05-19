@@ -68,7 +68,7 @@ namespace GTAMapViewer.Resource
         public readonly Vector3[] Vertices;
         public readonly Vector3[] Normals;
 
-        public readonly MaterialListSectionData MaterialList;
+        public readonly MaterialSectionData[] Materials;
 
         public GeometrySectionData( SectionHeader header, FramedStream stream )
         {
@@ -125,7 +125,7 @@ namespace GTAMapViewer.Resource
                     Normals[ i ] = reader.ReadVector3();
             }
 
-            MaterialList = ( new Section( stream ).Data as MaterialListSectionData );
+            Materials = ( new Section( stream ).Data as MaterialListSectionData ).Materials;
         }
 
         public float[] GetVertices()
@@ -155,6 +155,12 @@ namespace GTAMapViewer.Resource
                 data[ i * 3 + 2 ] = Faces[ i ].Vertex2;
             }
             return data;
+        }
+
+        public override void LoadAdditionalResources()
+        {
+            foreach ( MaterialSectionData mat in Materials )
+                mat.LoadAdditionalResources();
         }
     }
 }

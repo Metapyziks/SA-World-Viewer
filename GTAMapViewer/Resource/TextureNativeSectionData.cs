@@ -64,6 +64,8 @@ namespace GTAMapViewer.Resource
         public readonly byte RasterType;
         public readonly UInt32 ImageDataSize;
 
+        public readonly long DataStartPosition;
+
         public TextureNativeSectionData( SectionHeader header, FramedStream stream )
         {
             SectionHeader dataHeader = new SectionHeader( stream );
@@ -97,6 +99,8 @@ namespace GTAMapViewer.Resource
                 Compression = reader.ReadByte();
 
             ImageDataSize = reader.ReadUInt32();
+
+            DataStartPosition = stream.GlobalPosition;
         }
     }
 }
