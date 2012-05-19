@@ -65,28 +65,30 @@ namespace GTAMapViewer.Graphics
             vert.AddUniform( ShaderVarType.Mat4, "view_matrix" );
             vert.AddAttribute( ShaderVarType.Vec3, "in_position" );
             vert.AddAttribute( ShaderVarType.Vec2, "in_texcoord" );
-            vert.AddVarying( ShaderVarType.Vec3, "var_color" );
+            vert.AddVarying( ShaderVarType.Vec2, "var_texcoord" );
             vert.Logic = @"
                 void main( void )
                 {
                     gl_Position = view_matrix * vec4( in_position, 1 );
-                    var_color = vec3( in_texcoord, 1.0 );
+                    var_texcoord = in_texcoord;
                 }
             ";
 
             ShaderBuilder frag = new ShaderBuilder( ShaderType.FragmentShader, false );
-            frag.AddVarying( ShaderVarType.Vec3, "var_color" );
+            frag.AddUniform( ShaderVarType.Sampler2D, "tex" );
+            frag.AddVarying( ShaderVarType.Vec2, "var_texcoord" );
             frag.Logic = @"
                 void main( void )
                 {
-                    out_frag_colour = vec4( var_color, 1.0 );
+                    // out_frag_colour = vec4( var_texcoord, 1.0, 1.0 );
+                    out_frag_colour = texture2D( tex, var_texcoord );
                 }
             ";
 
             VertexSource = vert.Generate( GL3 );
             FragmentSource = frag.Generate( GL3 );
 
-            BeginMode = BeginMode.Triangles;
+            BeginMode = BeginMode.TriangleStrip;
 
             myCameraPosition = new Vector3();
             myCameraRotation = new Vector2( MathHelper.Pi * 30.0f / 180.0f, 0.0f );
@@ -115,6 +117,8 @@ namespace GTAMapViewer.Graphics
 
             AddAttribute( "in_position", 3 );
             AddAttribute( "in_texcoord", 2 );
+
+            AddTexture( "tex", TextureUnit.Texture0 );
 
             myViewMatrixLoc = GL.GetUniformLocation( Program, "view_matrix" );
         }
@@ -148,10 +152,10 @@ namespace GTAMapViewer.Graphics
                 UpdateViewMatrix();
 
             GL.Enable( EnableCap.DepthTest );
-            GL.Enable( EnableCap.CullFace );
+            GL.Enable( EnableCap.PrimitiveRestart );
 
-            GL.CullFace( CullFaceMode.Front );
             GL.BlendFunc( BlendingFactorSrc.One, BlendingFactorDest.Zero );
+            GL.PrimitiveRestartIndex( 0xffff );
 
             myCurrentModel = null;
         }
@@ -166,7 +170,7 @@ namespace GTAMapViewer.Graphics
                 myCurrentModel = model;
             }
 
-            model.VertexBuffer.Render( this );
+            model.Render( this );
         }
 
         protected override void OnEndBatch()
@@ -175,7 +179,7 @@ namespace GTAMapViewer.Graphics
                 myCurrentModel.VertexBuffer.EndBatch( this );
 
             GL.Disable( EnableCap.DepthTest );
-            GL.Disable( EnableCap.CullFace );
+            GL.Disable( EnableCap.PrimitiveRestart );
         }
     }
 }

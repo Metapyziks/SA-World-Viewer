@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 
+using OpenTK.Graphics.OpenGL;
+
 using GTAMapViewer.Graphics;
 
 namespace GTAMapViewer.Resource
@@ -35,6 +37,21 @@ namespace GTAMapViewer.Resource
         {
             foreach ( GeometrySectionData geo in myGeometry )
                 geo.LoadAdditionalResources();
+        }
+
+        public void Render( ModelShader shader )
+        {
+            if ( !VertexBuffer.DataSet )
+                return;
+
+            foreach ( GeometrySectionData geo in myGeometry )
+            {
+                foreach ( MaterialSplit mat in geo.MaterialSplits )
+                {
+                    shader.SetTexture( "tex", geo.Materials[ mat.MaterialIndex ].Textures[ 0 ].Texture );
+                    GL.DrawElements( BeginMode.TriangleStrip, mat.VertexCount, DrawElementsType.UnsignedShort, mat.Offset );
+                }
+            }
         }
 
         public void Dispose()

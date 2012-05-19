@@ -110,7 +110,16 @@ namespace GTAMapViewer
 
             public Texture2D LoadTexture( String name )
             {
-                return null;
+                TextureNativeSectionData tex = myTextureDict[ name ];
+
+                if ( !tex.Loaded )
+                {
+                    FramedStream stream = new FramedStream( myStream );
+                    stream.PushFrame( tex.DataStartPosition, tex.ImageDataSize );
+                    tex.Load( stream );
+                }
+
+                return tex.Texture;
             }
         }
 

@@ -69,6 +69,8 @@ namespace GTAMapViewer.Resource
         public readonly Vector3[] Normals;
 
         public readonly MaterialSectionData[] Materials;
+        public readonly MaterialSplit[] MaterialSplits;
+        public readonly UInt16 IndexCount;
 
         public GeometrySectionData( SectionHeader header, FramedStream stream )
         {
@@ -126,6 +128,12 @@ namespace GTAMapViewer.Resource
             }
 
             Materials = ( new Section( stream ).Data as MaterialListSectionData ).Materials;
+
+            SectionHeader extHeader = new SectionHeader( stream );
+            MaterialSplitSectionData msplits = new Section( stream ).Data as MaterialSplitSectionData;
+            MaterialSplits = msplits.MaterialSplits;
+            FaceCount = msplits.FaceCount;
+            IndexCount = msplits.IndexCount;
         }
 
         public float[] GetVertices()
@@ -147,12 +155,13 @@ namespace GTAMapViewer.Resource
 
         public ushort[] GetIndices()
         {
-            ushort[] data = new ushort[ FaceCount * 3 ];
-            for ( int i = 0; i < FaceCount; ++i )
+            ushort[] data = new ushort[ IndexCount ];
+            int i = 0;
+            foreach ( MaterialSplit split in MaterialSplits )
             {
-                data[ i * 3 ] = Faces[ i ].Vertex0;
-                data[ i * 3 + 1 ] = Faces[ i ].Vertex1;
-                data[ i * 3 + 2 ] = Faces[ i ].Vertex2;
+                UInt16[] indices = split.FaceIndices;
+                for ( int j = 0; j < indices.Length; ++j )
+                    data[ i++ ] = indices[ j ];
             }
             return data;
         }

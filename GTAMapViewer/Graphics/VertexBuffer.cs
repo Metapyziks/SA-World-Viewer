@@ -9,12 +9,12 @@ namespace GTAMapViewer.Graphics
     {
         private int myStride;
 
-        private bool myDataSet = false;
-
         private int myVertVboID;
         private int myIndVboID;
 
         private int myLength;
+
+        public bool DataSet { get; private set; }
 
         private int VertVboID
         {
@@ -57,7 +57,7 @@ namespace GTAMapViewer.Graphics
 
             CheckForError();
 
-            myDataSet = true;
+            DataSet = true;
         }
 
         private void CheckForError()
@@ -81,17 +81,6 @@ namespace GTAMapViewer.Graphics
             }
         }
 
-        public void Render( ShaderProgram shader, int first = 0, int count = -1 )
-        {
-            if ( myDataSet )
-            {
-                if ( count == -1 )
-                    count = myLength - first;
-
-                GL.DrawElements( shader.BeginMode, count, DrawElementsType.UnsignedShort, first );
-            }
-        }
-
         public void EndBatch( ShaderProgram shader )
         {
             foreach ( AttributeInfo info in shader.Attributes )
@@ -103,13 +92,13 @@ namespace GTAMapViewer.Graphics
 
         public void Dispose()
         {
-            if ( myDataSet )
+            if ( DataSet )
             {
                 GL.DeleteBuffers( 1, ref myVertVboID );
                 GL.DeleteBuffers( 1, ref myIndVboID );
             }
 
-            myDataSet = false;
+            DataSet = false;
         }
     }
 }

@@ -47,16 +47,6 @@ namespace GTAMapViewer.Graphics
             }
         }
 
-        public Texture2D( FramedStream stream )
-            : base( TextureTarget.Texture2D )
-        {
-            TextureDictionarySectionData data = new Section( stream ).Data as TextureDictionarySectionData;
-            TextureNativeSectionData tex = data.Textures[ 0 ];
-
-            Width = tex.Width;
-            Height = tex.Height;
-        }
-
         public Vector2 GetCoords( Vector2 pos )
         {
             return GetCoords( pos.X, pos.Y );
@@ -95,8 +85,8 @@ namespace GTAMapViewer.Graphics
 
             Bitmap.UnlockBits( data );
 
-            GL.TexParameter( TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (float) TextureMinFilter.Nearest );
-            GL.TexParameter( TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (float) TextureMagFilter.Nearest );
+            GL.TexParameter( TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (float) TextureMinFilter.Linear );
+            GL.TexParameter( TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (float) TextureMagFilter.Linear );
         }
     }
 }

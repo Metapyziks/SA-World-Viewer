@@ -59,6 +59,7 @@
     <Compile Include="Resource\GeometrySectionData.cs" />
     <Compile Include="Resource\MaterialListSectionData.cs" />
     <Compile Include="Resource\MaterialSectionData.cs" />
+    <Compile Include="Resource\MaterialSplitSectionData.cs" />
     <Compile Include="Resource\Section.cs" />
     <Compile Include="Resource\SectionData.cs" />
     <Compile Include="Resource\SectionHeader.cs" />
