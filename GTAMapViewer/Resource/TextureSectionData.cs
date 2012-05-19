@@ -24,7 +24,7 @@ namespace GTAMapViewer.Resource
             BinaryReader reader = new BinaryReader( stream );
 
             FilterMode = (TextureNativeSectionData.Filter) reader.ReadUInt16();
-            reader.ReadUInt16(); // Unknown
+            var unk = reader.ReadUInt16(); // Unknown
 
             TextureName = ( new Section( stream ).Data as StringSectionData ).Value;
             MaskName = ( new Section( stream ).Data as StringSectionData ).Value;

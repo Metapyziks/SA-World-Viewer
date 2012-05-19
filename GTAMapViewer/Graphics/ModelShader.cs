@@ -152,8 +152,10 @@ namespace GTAMapViewer.Graphics
                 UpdateViewMatrix();
 
             GL.Enable( EnableCap.DepthTest );
+            GL.Enable( EnableCap.CullFace );
             GL.Enable( EnableCap.PrimitiveRestart );
 
+            GL.CullFace( CullFaceMode.Front );
             GL.BlendFunc( BlendingFactorSrc.One, BlendingFactorDest.Zero );
             GL.PrimitiveRestartIndex( 0xffff );
 
@@ -179,6 +181,7 @@ namespace GTAMapViewer.Graphics
                 myCurrentModel.VertexBuffer.EndBatch( this );
 
             GL.Disable( EnableCap.DepthTest );
+            GL.Disable ( EnableCap.CullFace );
             GL.Disable( EnableCap.PrimitiveRestart );
         }
     }

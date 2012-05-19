@@ -14,7 +14,7 @@ namespace GTAMapViewer.Scenes
 {
     internal class ModelViewScene : Scene
     {
-        private const float CameraMoveSpeed = 64.0f;
+        private const float CameraMoveSpeed = 16.0f;
 
         private ModelShader myShader;
         private Model myCurrentModel;
@@ -39,7 +39,7 @@ namespace GTAMapViewer.Scenes
             {
                 myShader = new ModelShader( Width, Height );
                 myShader.CameraPosition = new Vector3( 0.0f, 0.0f, -8.0f );
-                myCurrentModel = ResourceManager.LoadModel( "ne_bit_08.dff" );
+                myCurrentModel = ResourceManager.LoadModel( "statue.dff" );
             }
         }
 
@@ -91,7 +91,8 @@ namespace GTAMapViewer.Scenes
             if ( movement.Length != 0 )
             {
                 movement.Normalize();
-                myShader.CameraPosition = myShader.CameraPosition + movement * CameraMoveSpeed * (float) e.Time;
+                myShader.CameraPosition = myShader.CameraPosition + movement * CameraMoveSpeed * (float) e.Time
+                    * ( Keyboard[ Key.ShiftLeft ] ? 4.0f : 1.0f );
             }
         }
 

@@ -44,8 +44,8 @@ namespace GTAMapViewer.Resource
             R5G6B5 = 0x0200,
             R4G4B4A4 = 0x0300,
             LUM8 = 0x0400,
-            B8R8G8A8 = 0x0500,
-            B8R8G8 = 0x0600,
+            B8G8R8A8 = 0x0500,
+            B8G8R8 = 0x0600,
             R5G5B5 = 0x0a00,
 
             ExtAutoMipMap = 0x1000,
@@ -145,12 +145,15 @@ namespace GTAMapViewer.Resource
                 case RasterFormat.ExtMipMap:
                     break;
                 default:
-                    throw new Exception( "Unhandled image format encountered" );
+                    throw new UnhandledImageFormatException( Compression, Format );
             }
 
             switch ( (RasterFormat) ( (int) Format & 0x0fff ) )
             {
                 case RasterFormat.R5G6B5:
+                    if ( Compression != CompressionMode.DXT1 )
+                        throw new UnhandledImageFormatException( Compression, Format );
+
                     byte[,] clrs = new byte[ 4, 3 ];
                     for ( int y = 0; y < Height; y += 4 )
                     {
@@ -187,8 +190,24 @@ namespace GTAMapViewer.Resource
                         }
                     }
                     break;
+                case RasterFormat.B8G8R8:
+                    if ( Compression != CompressionMode.None )
+                        throw new UnhandledImageFormatException( Compression, Format );
+
+                    for ( int y = 0; y < Height; ++y )
+                    {
+                        for ( int x = 0; x < Width; ++x )
+                        {
+                            int b = stream.ReadByte();
+                            int g = stream.ReadByte();
+                            int r = stream.ReadByte();
+                            stream.ReadByte();
+                            bmp.SetPixel( x, y, Color.FromArgb( r, g, b ) );
+                        }
+                    }
+                    break;
                 default:
-                    throw new Exception( "Unhandled image format encountered" );
+                    throw new UnhandledImageFormatException( Compression, Format );
             }
 
             Texture = new Texture2D( bmp );

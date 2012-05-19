@@ -80,6 +80,7 @@
     <Compile Include="Resource\Model.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Resource\UnhandledImageFormatException.cs" />
     <Compile Include="Scenes\Scene.cs" />
     <Compile Include="Scenes\ModelViewScene.cs" />
     <Compile Include="Tools.cs" />

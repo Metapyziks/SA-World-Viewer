@@ -20,7 +20,7 @@ namespace GTAMapViewer.Resource
 
             reader.ReadUInt32(); // Unknown
             Colour = reader.ReadUInt32();
-            reader.ReadUInt32(); // Unknown
+            var unk = reader.ReadUInt32(); // Unknown
             TextureCount = reader.ReadUInt32();
             Textures = new TextureSectionData[ TextureCount ]; 
             reader.ReadSingle(); // Unknown
