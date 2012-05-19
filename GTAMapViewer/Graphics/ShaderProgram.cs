@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace GTAMapViewer.Graphics
 {
-    public class AttributeInfo
+    internal class AttributeInfo
     {
         public ShaderProgram Shader { get; private set; }
         public String Identifier { get; private set; }
@@ -74,7 +74,7 @@ namespace GTAMapViewer.Graphics
         }
     }
 
-    public class ShaderProgram
+    internal class ShaderProgram
     {
         private class TextureInfo
         {
@@ -371,7 +371,7 @@ namespace GTAMapViewer.Graphics
         }
     }
 
-    public class ShaderProgram2D : ShaderProgram
+    internal class ShaderProgram2D : ShaderProgram
     {
         public ShaderProgram2D()
             : base()

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 
-namespace GTAMapViewer.DFF
+namespace GTAMapViewer.Resource
 {
     internal class SectionTypeAttribute : Attribute
     {

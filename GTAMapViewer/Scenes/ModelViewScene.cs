@@ -8,12 +8,14 @@ using OpenTK.Input;
 using OpenTK.Graphics.OpenGL;
 
 using GTAMapViewer.Graphics;
-using GTAMapViewer.DFF;
+using GTAMapViewer.Resource;
 
 namespace GTAMapViewer.Scenes
 {
     internal class ModelViewScene : Scene
     {
+        private const float CameraMoveSpeed = 64.0f;
+
         private ModelShader myShader;
         private Model myCurrentModel;
 
@@ -37,7 +39,7 @@ namespace GTAMapViewer.Scenes
             {
                 myShader = new ModelShader( Width, Height );
                 myShader.CameraPosition = new Vector3( 0.0f, 0.0f, -8.0f );
-                myCurrentModel = GameData.LoadModel( "des_farmhouse1_.dff" );
+                myCurrentModel = ResourceManager.LoadModel( "ne_bit_08.dff" );
             }
         }
 
@@ -89,7 +91,7 @@ namespace GTAMapViewer.Scenes
             if ( movement.Length != 0 )
             {
                 movement.Normalize();
-                myShader.CameraPosition = myShader.CameraPosition + movement * 0.125f;
+                myShader.CameraPosition = myShader.CameraPosition + movement * CameraMoveSpeed * (float) e.Time;
             }
         }
 

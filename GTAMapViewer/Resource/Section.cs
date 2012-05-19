@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace GTAMapViewer.DFF
+namespace GTAMapViewer.Resource
 {
     internal struct Section
     {

@@ -4,7 +4,7 @@ using OpenTK.Graphics.OpenGL;
 
 namespace GTAMapViewer.Graphics
 {
-    public class Texture
+    internal class Texture
     {
         protected static int GetNextPOTS( int wid, int hei )
         {

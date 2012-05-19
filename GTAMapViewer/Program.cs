@@ -1,7 +1,6 @@
 ﻿using System;
 
-using GTAMapViewer.IMG;
-using GTAMapViewer.DFF;
+using GTAMapViewer.Resource;
 
 namespace GTAMapViewer
 {
@@ -9,9 +8,13 @@ namespace GTAMapViewer
     {
         static void Main( string[] args )
         {
-            ImageArchive arch = ImageArchive.Load( args[ 0 ] );
-            Console.WriteLine( "Archive Version: {0}", arch.Version );
-            ViewerWindow window = new ViewerWindow( arch );
+            if ( args.Length == 0 )
+                return;
+
+            foreach ( String arg in args )
+                ResourceManager.LoadArchive( arg );
+
+            ViewerWindow window = new ViewerWindow();
             window.Run();
             window.Dispose();
         }

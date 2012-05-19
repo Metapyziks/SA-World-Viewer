@@ -7,7 +7,7 @@ using System.IO;
 using OpenTK;
 using OpenTK.Graphics;
 
-namespace GTAMapViewer.DFF
+namespace GTAMapViewer.Resource
 {
     internal enum GeometryFlag : ushort
     {
@@ -68,6 +68,8 @@ namespace GTAMapViewer.DFF
         public readonly Vector3[] Vertices;
         public readonly Vector3[] Normals;
 
+        public readonly MaterialListSectionData MaterialList;
+
         public GeometrySectionData( SectionHeader header, FramedStream stream )
         {
             SectionHeader dataHeader = new SectionHeader( stream );
@@ -122,6 +124,8 @@ namespace GTAMapViewer.DFF
                 for ( int i = 0; i < VertexCount; ++i )
                     Normals[ i ] = reader.ReadVector3();
             }
+
+            MaterialList = ( new Section( stream ).Data as MaterialListSectionData );
         }
 
         public float[] GetVertices()

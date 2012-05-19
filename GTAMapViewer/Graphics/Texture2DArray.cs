@@ -3,9 +3,11 @@ using System.Drawing;
 
 using OpenTK.Graphics.OpenGL;
 
+using GTAMapViewer.Resource;
+
 namespace GTAMapViewer.Graphics
 {
-    public class Texture2DArray : Texture
+    internal class Texture2DArray : Texture
     {
         private Texture2D[] myTextures;
 

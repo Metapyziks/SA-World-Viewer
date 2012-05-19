@@ -18,7 +18,7 @@ namespace GTAMapViewer.Graphics
         Mat4
     }
 
-    public class ShaderBuilder
+    internal class ShaderBuilder
     {
         private struct ShaderVariable
         {

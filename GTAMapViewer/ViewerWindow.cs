@@ -6,24 +6,21 @@ using OpenTK.Graphics.OpenGL;
 using OpenTK.Input;
 
 using GTAMapViewer.Scenes;
-using GTAMapViewer.IMG;
 
 namespace GTAMapViewer
 {
     internal class ViewerWindow : GameWindow
     {
         public Scene CurrentScene { get; private set; }
-        public ImageArchive GameData { get; private set; }
 
-        public ViewerWindow( ImageArchive gameData )
-            : base( 800, 600, new GraphicsMode( new ColorFormat( 8, 8, 8, 8 ), 8, 0 ), "GTA SA Model Viewer" )
+        public ViewerWindow()
+            : base( 800, 600, new GraphicsMode( new ColorFormat( 8, 8, 8, 8 ), 16, 0 ), "GTA SA Model Viewer" )
         {
             VSync = VSyncMode.On;
             Context.SwapInterval = 1;
 
             WindowBorder = WindowBorder.Fixed;
 
-            GameData = gameData;
             CurrentScene = null;
         }
 

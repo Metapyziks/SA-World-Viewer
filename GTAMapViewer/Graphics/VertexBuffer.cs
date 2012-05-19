@@ -5,7 +5,7 @@ using OpenTK.Graphics.OpenGL;
 
 namespace GTAMapViewer.Graphics
 {
-    public class VertexBuffer : IDisposable
+    internal class VertexBuffer : IDisposable
     {
         private int myStride;
 

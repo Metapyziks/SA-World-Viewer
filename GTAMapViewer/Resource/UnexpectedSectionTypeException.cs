@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace GTAMapViewer.DFF
+namespace GTAMapViewer.Resource
 {
     internal class UnexpectedSectionTypeException : Exception
     {

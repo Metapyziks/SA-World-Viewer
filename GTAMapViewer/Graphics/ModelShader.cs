@@ -7,7 +7,7 @@ using System.Drawing;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
 
-using GTAMapViewer.DFF;
+using GTAMapViewer.Resource;
 
 namespace GTAMapViewer.Graphics
 {

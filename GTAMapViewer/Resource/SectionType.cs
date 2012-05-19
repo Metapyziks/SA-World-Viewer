@@ -1,4 +1,4 @@
-﻿namespace GTAMapViewer.DFF
+﻿namespace GTAMapViewer.Resource
 {
     internal enum SectionType
     {
@@ -13,6 +13,8 @@
         Geometry = 15,
         Clump = 16,
         Atomic = 20,
+        TextureNative = 21,
+        TextureDictionary = 22,
         GeometryList = 26,
         MaterialSplit = 1294,
         Frame = 39056126

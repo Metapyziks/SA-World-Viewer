@@ -6,8 +6,6 @@ using System.Text;
 using OpenTK.Input;
 using OpenTK;
 
-using GTAMapViewer.IMG;
-
 namespace GTAMapViewer.Scenes
 {
     internal class Scene : IDisposable
@@ -15,11 +13,6 @@ namespace GTAMapViewer.Scenes
         internal bool FirstTime;
 
         public ViewerWindow GameWindow { get; private set; }
-
-        public ImageArchive GameData
-        {
-            get { return GameWindow.GameData; }
-        }
 
         public int Width
         {

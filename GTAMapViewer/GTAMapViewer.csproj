@@ -6,7 +6,7 @@
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{9704517C-96E6-4A2D-A0E9-F32FF9E651C7}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>GTAMapViewer</RootNamespace>
     <AssemblyName>GTAMapViewer</AssemblyName>
@@ -33,6 +33,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="OpenTK, Version=1.0.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -49,25 +52,31 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DFF\ClumpSectionData.cs" />
-    <Compile Include="DFF\DataSectionData.cs" />
-    <Compile Include="DFF\GeometryListSectionData.cs" />
-    <Compile Include="DFF\GeometrySectionData.cs" />
-    <Compile Include="DFF\Section.cs" />
-    <Compile Include="DFF\SectionData.cs" />
-    <Compile Include="DFF\SectionHeader.cs" />
-    <Compile Include="DFF\SectionType.cs" />
-    <Compile Include="DFF\UnexpectedSectionTypeException.cs" />
+    <Compile Include="ResourceManager.cs" />
+    <Compile Include="Resource\ClumpSectionData.cs" />
+    <Compile Include="Resource\DataSectionData.cs" />
+    <Compile Include="Resource\GeometryListSectionData.cs" />
+    <Compile Include="Resource\GeometrySectionData.cs" />
+    <Compile Include="Resource\MaterialListSectionData.cs" />
+    <Compile Include="Resource\MaterialSectionData.cs" />
+    <Compile Include="Resource\Section.cs" />
+    <Compile Include="Resource\SectionData.cs" />
+    <Compile Include="Resource\SectionHeader.cs" />
+    <Compile Include="Resource\SectionType.cs" />
+    <Compile Include="Resource\StringSectionData.cs" />
+    <Compile Include="Graphics\Texture2D.cs" />
+    <Compile Include="Resource\TextureDictionarySectionData.cs" />
+    <Compile Include="Resource\TextureNativeSectionData.cs" />
+    <Compile Include="Resource\TextureSectionData.cs" />
+    <Compile Include="Resource\UnexpectedSectionTypeException.cs" />
     <Compile Include="FramedStream.cs" />
     <Compile Include="Graphics\ModelShader.cs" />
     <Compile Include="Graphics\ShaderBuilder.cs" />
     <Compile Include="Graphics\ShaderProgram.cs" />
     <Compile Include="Graphics\Texture.cs" />
-    <Compile Include="Graphics\Texture2D.cs" />
     <Compile Include="Graphics\Texture2DArray.cs" />
     <Compile Include="Graphics\VertexBuffer.cs" />
-    <Compile Include="IMG\ImageArchive.cs" />
-    <Compile Include="DFF\Model.cs" />
+    <Compile Include="Resource\Model.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Scenes\Scene.cs" />
@@ -75,6 +84,7 @@
     <Compile Include="Tools.cs" />
     <Compile Include="ViewerWindow.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -263,5 +263,20 @@ namespace GTAMapViewer
                 Y = reader.ReadSingle()
             };
         }
+
+        internal static String ReadString( this BinaryReader reader, int length )
+        {
+            byte[] bytes = reader.ReadBytes( length );
+            return Encoding.UTF8.GetString( bytes ).TrimNullChars();
+        }
+
+        internal static String TrimNullChars( this String str )
+        {
+            for ( int i = 0; i < str.Length; ++i )
+                if ( str[ i ] == '\0' )
+                    return str.Substring( 0, i );
+
+            return str;
+        }
     }
 }

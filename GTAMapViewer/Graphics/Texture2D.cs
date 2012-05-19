@@ -1,14 +1,18 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.IO;
+using System.Linq;
+using System.Text;
 
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
 
+using GTAMapViewer.Resource;
+
 namespace GTAMapViewer.Graphics
 {
-    public class Texture2D : Texture
+    internal class Texture2D : Texture
     {
         public static readonly Texture2D Blank;
 
@@ -41,6 +45,16 @@ namespace GTAMapViewer.Graphics
                     for ( int y = 0; y < Height; ++y )
                         Bitmap.SetPixel( x, y, bitmap.GetPixel( x, y ) );
             }
+        }
+
+        public Texture2D( FramedStream stream )
+            : base( TextureTarget.Texture2D )
+        {
+            TextureDictionarySectionData data = new Section( stream ).Data as TextureDictionarySectionData;
+            TextureNativeSectionData tex = data.Textures[ 0 ];
+
+            Width = tex.Width;
+            Height = tex.Height;
         }
 
         public Vector2 GetCoords( Vector2 pos )

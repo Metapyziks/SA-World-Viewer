@@ -4,7 +4,7 @@ using System.IO;
 
 namespace GTAMapViewer
 {
-    public class FramedStream : Stream
+    internal class FramedStream : Stream
     {
         private struct Frame
         {
@@ -29,9 +29,6 @@ namespace GTAMapViewer
 
         public FramedStream( Stream baseStream )
         {
-            if ( baseStream is FramedStream )
-                throw new Exception( "Wrapping a FramedStream around a FramedStream? No." );
-
             myStream = baseStream;
             myBaseFrame = new Frame( 0, myStream.Length );
             myFrameStack = new Stack<Frame>();
