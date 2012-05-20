@@ -70,11 +70,9 @@ namespace GTAMapViewer.Resource
         public readonly byte RasterType;
         public readonly UInt32 ImageDataSize;
 
-        public readonly long DataStartPosition;
-
         public Texture2D Texture;
 
-        public bool Loaded { get { return Texture != null; } }
+        public bool Loaded { get { return Texture != null && Texture.Ready; } }
 
         public TextureNativeSectionData( SectionHeader header, FramedStream stream )
         {
@@ -121,7 +119,7 @@ namespace GTAMapViewer.Resource
 
             ImageDataSize = reader.ReadUInt32();
 
-            DataStartPosition = stream.GlobalPosition;
+            Load( stream );
         }
 
         private static Color DecodeColor( UInt16 val, bool alpha )

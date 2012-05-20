@@ -59,8 +59,6 @@ namespace GTAMapViewer
             private Stream myStream;
 
             private Dictionary<String, ImageArchiveEntry> myFileDict;
-            private Dictionary<String, TextureNativeSectionData> myDiffTextureDict;
-            private Dictionary<String, TextureNativeSectionData> myMaskTextureDict;
 
             public readonly String Version;
             public readonly UInt32 Length;
@@ -80,40 +78,11 @@ namespace GTAMapViewer
                     ImageArchiveEntry entry = new ImageArchiveEntry( stream );
                     myFileDict.Add( entry.Name, entry );
                 }
-
-                myDiffTextureDict = new Dictionary<string, TextureNativeSectionData>();
-                myMaskTextureDict = new Dictionary<string, TextureNativeSectionData>();
-
-                if ( myFileDict.ContainsKey( "des.txd" ) )
-                    return;
-
-                FramedStream str = new FramedStream( myStream );
-                foreach ( ImageArchiveEntry entry in myFileDict.Values.Where( x => x.Name.EndsWith( ".txd" ) ) )
-                {
-                    str.PushFrame( entry.Offset, entry.Size );
-                    TextureDictionarySectionData tdic = new Section( str ).Data as TextureDictionarySectionData;
-                    str.PopFrame();
-                    foreach ( TextureNativeSectionData tex in tdic.Textures )
-                    {
-                        if ( tex.DiffuseName.Length > 0 && !myDiffTextureDict.ContainsKey( tex.DiffuseName ) )
-                            myDiffTextureDict.Add( tex.DiffuseName, tex );
-                        if ( tex.AlphaName.Length > 0 && !myMaskTextureDict.ContainsKey( tex.AlphaName ) )
-                            myMaskTextureDict.Add( tex.AlphaName, tex );
-                    }
-                }
             }
 
             public bool ContainsFile( String name )
             {
                 return myFileDict.ContainsKey( name );
-            }
-
-            public bool ContainsTexture( String name, TextureType type )
-            {
-                if( type == TextureType.Diffuse )
-                    return myDiffTextureDict.ContainsKey( name );
-
-                return myMaskTextureDict.ContainsKey( name );
             }
 
             public FramedStream ReadFile( String name )
@@ -123,36 +92,21 @@ namespace GTAMapViewer
                 stream.PushFrame( entry.Offset, entry.Size );
                 return stream;
             }
-
-            public Texture2D LoadTexture( String name, TextureType type )
-            {
-                TextureNativeSectionData tex = ( type == TextureType.Diffuse ?
-                    myDiffTextureDict[ name ] : myMaskTextureDict[ name ] );
-
-                if ( !tex.Loaded )
-                {
-                    FramedStream stream = new FramedStream( myStream );
-                    stream.PushFrame( tex.DataStartPosition, tex.ImageDataSize );
-                    tex.Load( stream );
-                }
-
-                return tex.Texture;
-            }
         }
 
         private static List<ImageArchive> stLoadedArchives = new List<ImageArchive>();
 
         private static Dictionary<String, Resource<Model>> stLoadedModels
             = new Dictionary<string, Resource<Model>>();
-        private static Dictionary<String, Resource<Texture2D>> stLoadedTextures
-            = new Dictionary<string, Resource<Texture2D>>();
+        private static Dictionary<String, Resource<TextureDictionary>> stLoadedTexDicts
+            = new Dictionary<string, Resource<TextureDictionary>>();
 
         public static void LoadArchive( String filePath )
         {
             stLoadedArchives.Add( ImageArchive.Load( filePath ) );
         }
 
-        public static Model LoadModel( String name )
+        public static Model LoadModel( String name, String txdName )
         {
             name = name.ToLower();
 
@@ -168,13 +122,15 @@ namespace GTAMapViewer
                     if ( archive.ContainsFile( name ) )
                     {
                         res = new Resource<Model>( new Model( archive.ReadFile( name ) ) );
-                        res.Value.LoadAdditionalResources();
                         break;
                     }
                 }
 
                 if ( res == null )
                     throw new KeyNotFoundException( "File with name \"" + name + "\" not present in a loaded archive." );
+
+                TextureDictionary txd = LoadTextureDictionary( txdName );
+                res.Value.LoadTextures( txd );
 
                 stLoadedModels.Add( name, res );
             }
@@ -191,45 +147,47 @@ namespace GTAMapViewer
             --stLoadedModels[ name ].Uses;
         }
 
-        private static String GetTextureName( String name, TextureType type )
+        private static String GetTextureName( String name, String txdName, TextureType type )
         {
-            return type.ToString()[ 0 ] + "_" + name;
+            return txdName + "_" + type.ToString()[ 0 ] + "_" + name;
         }
 
-        public static Texture2D LoadTexture( String name, TextureType type )
+        public static TextureDictionary LoadTextureDictionary( String name )
         {
-            Resource<Texture2D> res = null;
+            name = name.ToLower();
 
-            String rname = GetTextureName( name, type );
+            if ( !name.EndsWith( ".txd" ) )
+                name += ".txd";
 
-            if ( !stLoadedTextures.ContainsKey( rname ) )
+            Resource<TextureDictionary> res = null;
+
+            if ( !stLoadedModels.ContainsKey( name ) )
             {
                 foreach ( ImageArchive archive in stLoadedArchives )
                 {
-                    if ( archive.ContainsTexture( name, type ) )
+                    if ( archive.ContainsFile( name ) )
                     {
-                        res = new Resource<Texture2D>( archive.LoadTexture( name, type ) );
+                        res = new Resource<TextureDictionary>( new TextureDictionary( archive.ReadFile( name ) ) );
                         break;
                     }
                 }
 
                 if ( res == null )
-                    res = new Resource<Texture2D>( Texture2D.Missing );
+                    throw new KeyNotFoundException( "File with name \"" + name + "\" not present in a loaded archive." );
 
-                stLoadedTextures.Add( rname, res );
+                stLoadedTexDicts.Add( name, res );
             }
             else
-                res = stLoadedTextures[ rname ];
+                res = stLoadedTexDicts[ name ];
 
             ++res.Uses;
 
             return res.Value;
         }
 
-        public static void UnloadTexture( String name, TextureType type )
+        public static void UnloadTextureDictionary( String name )
         {
-            String rname = GetTextureName( name, type );
-            --stLoadedTextures[ rname ].Uses;
+            --stLoadedTexDicts[ name ].Uses;
         }
     }
 }

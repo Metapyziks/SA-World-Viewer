@@ -30,12 +30,12 @@ namespace GTAMapViewer.Resource
             MaskName = ( new Section( stream ).Data as StringSectionData ).Value;
         }
 
-        public override void LoadAdditionalResources()
+        public void LoadTextures( TextureDictionary txd )
         {
             if ( TextureName.Length > 0 )
-                Texture = ResourceManager.LoadTexture( TextureName, TextureType.Diffuse );
+                Texture = txd.Load( TextureName, TextureType.Diffuse );
             if ( MaskName.Length > 0 )
-                Mask = ResourceManager.LoadTexture( MaskName, TextureType.Mask );
+                Mask = txd.Load( MaskName, TextureType.Mask );
         }
     }
 }

@@ -184,10 +184,10 @@ namespace GTAMapViewer.Resource
             return data;
         }
 
-        public override void LoadAdditionalResources()
+        public void LoadTextures( TextureDictionary txd )
         {
             foreach ( MaterialSectionData mat in Materials )
-                mat.LoadAdditionalResources();
+                mat.LoadTextures( txd );
         }
     }
 }

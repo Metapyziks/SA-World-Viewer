@@ -33,10 +33,10 @@ namespace GTAMapViewer.Resource
                 Textures[ i ] = new Section( stream ).Data as TextureSectionData;
         }
 
-        public override void LoadAdditionalResources()
+        public void LoadTextures( TextureDictionary txd )
         {
             foreach ( TextureSectionData tex in Textures )
-                tex.LoadAdditionalResources();
+                tex.LoadTextures( txd );
         }
     }
 }

@@ -37,10 +37,10 @@ namespace GTAMapViewer.Resource
             MaterialNumber = geo.MaterialSplits.Length;
         }
 
-        public void LoadAdditionalResources()
+        public void LoadTextures( TextureDictionary txd )
         {
             foreach ( GeometrySectionData geo in myGeometry )
-                geo.LoadAdditionalResources();
+                geo.LoadTextures( txd );
         }
 
         public void Render( ModelShader shader )
