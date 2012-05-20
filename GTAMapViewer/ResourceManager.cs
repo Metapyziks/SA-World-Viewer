@@ -188,7 +188,7 @@ namespace GTAMapViewer
                 }
 
                 if ( res == null )
-                    throw new KeyNotFoundException( "File with name \"" + name + "\" not present in a loaded archive." );
+                    res = new Resource<Texture2D>( Texture2D.Missing );
             }
             else
                 res = stLoadedTextures[ name ];

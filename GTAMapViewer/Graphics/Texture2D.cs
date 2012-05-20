@@ -14,13 +14,20 @@ namespace GTAMapViewer.Graphics
 {
     internal class Texture2D : Texture
     {
-        public static readonly Texture2D Blank;
+        public static readonly Texture2D Missing;
 
         static Texture2D()
         {
-            Bitmap blankBmp = new Bitmap( 1, 1 );
-            blankBmp.SetPixel( 0, 0, Color.White );
-            Blank = new Texture2D( blankBmp );
+            Bitmap missingBmp = new Bitmap( 16, 16 );
+            for ( int x = 0; x < 16; ++x )
+            {
+                for ( int y = 0; y < 16; ++y )
+                {
+                    bool black = ( ( x / 4 ) % 2 == ( y / 4 ) % 2 );
+                    missingBmp.SetPixel( x, y, black ? Color.Black : Color.Magenta );
+                }
+            }
+            Missing = new Texture2D( missingBmp );
         }
 
         public int Width { get; private set; }
@@ -57,7 +64,7 @@ namespace GTAMapViewer.Graphics
 
         public void SetPixel( int x, int y, Color colour )
         {
-            if ( this == Blank )
+            if ( this == Missing )
                 return;
 
             Bitmap.SetPixel( x, y, colour );

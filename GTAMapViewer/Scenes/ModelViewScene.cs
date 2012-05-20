@@ -41,7 +41,7 @@ namespace GTAMapViewer.Scenes
             {
                 myShader = new ModelShader( Width, Height );
                 myShader.CameraPosition = new Vector3( 0.0f, 0.0f, -8.0f );
-                myCurrentModel = ResourceManager.LoadModel( "cuntwland20b.dff" );
+                myCurrentModel = ResourceManager.LoadModel( "vgswlcmsign1" );
             }
         }
 
