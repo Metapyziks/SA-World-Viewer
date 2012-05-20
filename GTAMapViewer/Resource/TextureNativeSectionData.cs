@@ -273,7 +273,7 @@ namespace GTAMapViewer.Resource
                                     alp |= 0x0f;
 
                                 bmp.SetPixel( x + ( i % 4 ), y + ( i / 4 ),
-                                    Color.FromArgb( clrs[ clr, 0 ], clrs[ clr, 1 ], clrs[ clr, 2 ] ) );
+                                    Color.FromArgb( alp, clrs[ clr, 0 ], clrs[ clr, 1 ], clrs[ clr, 2 ] ) );
                             }
                         }
                     }

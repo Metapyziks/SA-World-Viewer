@@ -41,8 +41,8 @@ namespace GTAMapViewer.Resource
             }
             if ( MaskName.Length > 0 )
             {
-                if ( txd.Contains( TextureName, TextureType.Mask ) )
-                    Mask = txd[ TextureName, TextureType.Mask ];
+                if ( txd.Contains( MaskName, TextureType.Mask ) )
+                    Mask = txd[ MaskName, TextureType.Mask ];
                 else
                     Mask = Texture2D.Missing;
             }

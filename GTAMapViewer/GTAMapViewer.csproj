@@ -52,6 +52,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Items\ObjectDefinition.cs" />
+    <Compile Include="Items\ItemManager.cs" />
+    <Compile Include="Items\ObjectFlag.cs" />
     <Compile Include="ResourceManager.cs" />
     <Compile Include="Resource\ClumpSectionData.cs" />
     <Compile Include="Resource\DataSectionData.cs" />

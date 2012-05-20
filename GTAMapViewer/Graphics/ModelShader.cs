@@ -120,7 +120,7 @@ namespace GTAMapViewer.Graphics
             frag.Logic = @"
                 void main( void )
                 {
-                    if( ( flags & 4 ) != 0 && texture2D( tex_mask, var_texcoord ).r == 0 )
+                    if( ( flags & 4 ) != 0 && texture2D( tex_mask, var_texcoord ).a == 0 )
                         discard;
                     else
                         out_frag_colour = texture2D( tex_diffuse, var_texcoord ) * var_colour;

@@ -1,6 +1,8 @@
 ﻿using System;
+using System.IO;
 
 using GTAMapViewer.Resource;
+using GTAMapViewer.Items;
 
 namespace GTAMapViewer
 {
@@ -8,11 +10,24 @@ namespace GTAMapViewer
     {
         static void Main( string[] args )
         {
-            if ( args.Length == 0 )
-                return;
+            if ( args.Length > 0 )
+                Directory.SetCurrentDirectory( args[ 0 ] );
 
-            foreach ( String arg in args )
-                ResourceManager.LoadArchive( arg );
+            String modelPath = "models" + Path.DirectorySeparatorChar;
+            String dataPath = "data" + Path.DirectorySeparatorChar;
+
+            try
+            {
+                ResourceManager.LoadArchive( modelPath + "gta3.img" );
+                ResourceManager.LoadArchive( modelPath + "gta_int.img" );
+                ResourceManager.LoadArchive( modelPath + "player.img" );
+
+                ItemManager.LoadDefinitionFiles( dataPath );
+            }
+            catch ( FileNotFoundException )
+            {
+                return;
+            }
 
             ViewerWindow window = new ViewerWindow();
             window.Run();
