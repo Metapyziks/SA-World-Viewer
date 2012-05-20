@@ -58,8 +58,20 @@ namespace GTAMapViewer.Resource
                 {
                     if ( mat.Material.TextureCount > 0 )
                     {
-                        shader.SetTexture( "tex", mat.Material.Textures[ 0 ].Texture );
+                        TextureSectionData tex = mat.Material.Textures[ 0 ];
+                        ModelShader.ModelFlags flags = ModelShader.ModelFlags.Colour;
+                        if ( tex.TextureName.Length > 0 )
+                        {
+                            shader.SetTexture( "tex_diffuse", tex.Texture );
+                            flags |= ModelShader.ModelFlags.Diffuse;
+                        }
+                        if ( tex.MaskName.Length > 0 )
+                        {
+                            shader.SetTexture( "tex_mask", tex.Mask );
+                            flags |= ModelShader.ModelFlags.Mask;
+                        }
                         shader.Colour = mat.Material.Colour;
+                        shader.Flags = flags;
                         GL.DrawElements( BeginMode.TriangleStrip, mat.VertexCount, DrawElementsType.UnsignedShort, mat.Offset * sizeof( UInt16 ) );
                     }
                 }

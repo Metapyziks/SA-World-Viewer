@@ -14,6 +14,13 @@ namespace GTAMapViewer.Graphics
 {
     internal class ModelShader : ShaderProgram
     {
+        public enum ModelFlags : int
+        {
+            Colour = 1,
+            Diffuse = 2,
+            Mask = 4
+        }
+
         private Model myCurrentModel;
 
         private Matrix4 myViewMatrix;
@@ -22,12 +29,14 @@ namespace GTAMapViewer.Graphics
         private Color4 myColour;
         private int myColourLoc;
 
+        private ModelFlags myFlags;
+        private int myFlagsLoc;
+
         private Vector3 myCameraPosition;
         private Vector2 myCameraRotation;
         private Matrix4 myPerspectiveMatrix;
 
         private bool myPerspectiveChanged;
-        private bool myColourChanged;
         private bool myViewChanged;
 
         public int ScreenWidth { get; private set; }
@@ -69,7 +78,16 @@ namespace GTAMapViewer.Graphics
             set
             {
                 myColour = value;
-                myColourChanged = true;
+                GL.Uniform4( myColourLoc, value );
+            }
+        }
+        public ModelFlags Flags
+        {
+            get { return myFlags; }
+            set
+            {
+                myFlags = value;
+                GL.Uniform1( myFlagsLoc, (int) value );
             }
         }
 
@@ -78,6 +96,7 @@ namespace GTAMapViewer.Graphics
             ShaderBuilder vert = new ShaderBuilder( ShaderType.VertexShader, false );
             vert.AddUniform( ShaderVarType.Mat4, "view_matrix" );
             vert.AddUniform( ShaderVarType.Vec4, "colour" );
+            vert.AddUniform( ShaderVarType.Int, "flags" );
             vert.AddAttribute( ShaderVarType.Vec3, "in_position" );
             vert.AddAttribute( ShaderVarType.Vec2, "in_texcoord" );
             vert.AddAttribute( ShaderVarType.Vec4, "in_colour" );
@@ -88,19 +107,23 @@ namespace GTAMapViewer.Graphics
                 {
                     gl_Position = view_matrix * vec4( in_position, 1 );
                     var_texcoord = in_texcoord;
-                    var_colour = in_colour * colour;
+                    var_colour = ( ( flags & 1 ) != 0 ? colour * in_colour : colour );
                 }
             ";
 
             ShaderBuilder frag = new ShaderBuilder( ShaderType.FragmentShader, false );
-            frag.AddUniform( ShaderVarType.Sampler2D, "tex" );
+            frag.AddUniform( ShaderVarType.Sampler2D, "tex_diffuse" );
+            frag.AddUniform( ShaderVarType.Sampler2D, "tex_mask" );
+            frag.AddUniform( ShaderVarType.Int, "flags" );
             frag.AddVarying( ShaderVarType.Vec2, "var_texcoord" );
             frag.AddVarying( ShaderVarType.Vec4, "var_colour" );
             frag.Logic = @"
                 void main( void )
                 {
-                    // out_frag_colour = vec4( var_texcoord, 1.0, 1.0 );
-                    out_frag_colour = texture2D( tex, var_texcoord ) * var_colour;
+                    if( ( flags & 4 ) != 0 && texture2D( tex_mask, var_texcoord ).r == 0 )
+                        discard;
+                    else
+                        out_frag_colour = texture2D( tex_diffuse, var_texcoord ) * var_colour;
                 }
             ";
 
@@ -113,9 +136,9 @@ namespace GTAMapViewer.Graphics
             myCameraRotation = new Vector2( MathHelper.Pi * 30.0f / 180.0f, 0.0f );
 
             myColour = Color4.White;
+            myFlags = ModelFlags.Colour;
 
             myPerspectiveChanged = true;
-            myColourChanged = true;
             myViewChanged = true;
         }
 
@@ -141,10 +164,15 @@ namespace GTAMapViewer.Graphics
             AddAttribute( "in_texcoord", 2 );
             AddAttribute( "in_colour", 4 );
 
-            AddTexture( "tex", TextureUnit.Texture0 );
+            AddTexture( "tex_diffuse", TextureUnit.Texture0 );
+            AddTexture( "tex_mask", TextureUnit.Texture1 );
 
             myViewMatrixLoc = GL.GetUniformLocation( Program, "view_matrix" );
             myColourLoc = GL.GetUniformLocation( Program, "colour" );
+            myFlagsLoc = GL.GetUniformLocation( Program, "flags" );
+
+            Colour = Color4.White;
+            Flags = ModelFlags.Colour;
         }
 
         private void UpdatePerspectiveMatrix()
@@ -154,13 +182,6 @@ namespace GTAMapViewer.Graphics
             UpdateViewMatrix();
 
             myPerspectiveChanged = false;
-        }
-
-        private void UpdateColour()
-        {
-            GL.Uniform4( myColourLoc, myColour );
-
-            myColourChanged = false;
         }
 
         private void UpdateViewMatrix()
@@ -181,8 +202,6 @@ namespace GTAMapViewer.Graphics
                 UpdatePerspectiveMatrix();
             else if ( myViewChanged )
                 UpdateViewMatrix();
-            if ( myColourChanged )
-                UpdateColour();
 
             GL.Enable( EnableCap.DepthTest );
             GL.Enable( EnableCap.CullFace );

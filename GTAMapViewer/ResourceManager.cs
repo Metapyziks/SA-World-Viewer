@@ -10,6 +10,12 @@ using GTAMapViewer.Graphics;
 
 namespace GTAMapViewer
 {
+    internal enum TextureType : byte
+    {
+        Diffuse,
+        Mask
+    }
+
     internal static class ResourceManager
     {
         private class Resource<T>
@@ -53,7 +59,8 @@ namespace GTAMapViewer
             private Stream myStream;
 
             private Dictionary<String, ImageArchiveEntry> myFileDict;
-            private Dictionary<String, TextureNativeSectionData> myTextureDict;
+            private Dictionary<String, TextureNativeSectionData> myDiffTextureDict;
+            private Dictionary<String, TextureNativeSectionData> myMaskTextureDict;
 
             public readonly String Version;
             public readonly UInt32 Length;
@@ -74,19 +81,25 @@ namespace GTAMapViewer
                     myFileDict.Add( entry.Name, entry );
                 }
 
-                myTextureDict = new Dictionary<string, TextureNativeSectionData>();
+                myDiffTextureDict = new Dictionary<string, TextureNativeSectionData>();
+                myMaskTextureDict = new Dictionary<string, TextureNativeSectionData>();
 
                 if ( myFileDict.ContainsKey( "des.txd" ) )
                     return;
 
+                FramedStream str = new FramedStream( myStream );
                 foreach ( ImageArchiveEntry entry in myFileDict.Values.Where( x => x.Name.EndsWith( ".txd" ) ) )
                 {
-                    FramedStream str = new FramedStream( myStream );
                     str.PushFrame( entry.Offset, entry.Size );
                     TextureDictionarySectionData tdic = new Section( str ).Data as TextureDictionarySectionData;
+                    str.PopFrame();
                     foreach ( TextureNativeSectionData tex in tdic.Textures )
-                        if( !myTextureDict.ContainsKey( tex.DiffuseName ) )
-                            myTextureDict.Add( tex.DiffuseName, tex );
+                    {
+                        if ( tex.DiffuseName.Length > 0 && !myDiffTextureDict.ContainsKey( tex.DiffuseName ) )
+                            myDiffTextureDict.Add( tex.DiffuseName, tex );
+                        if ( tex.AlphaName.Length > 0 && !myMaskTextureDict.ContainsKey( tex.AlphaName ) )
+                            myMaskTextureDict.Add( tex.AlphaName, tex );
+                    }
                 }
             }
 
@@ -95,9 +108,12 @@ namespace GTAMapViewer
                 return myFileDict.ContainsKey( name );
             }
 
-            public bool ContainsTexture( String name )
+            public bool ContainsTexture( String name, TextureType type )
             {
-                return myTextureDict.ContainsKey( name );
+                if( type == TextureType.Diffuse )
+                    return myDiffTextureDict.ContainsKey( name );
+
+                return myMaskTextureDict.ContainsKey( name );
             }
 
             public FramedStream ReadFile( String name )
@@ -108,9 +124,10 @@ namespace GTAMapViewer
                 return stream;
             }
 
-            public Texture2D LoadTexture( String name )
+            public Texture2D LoadTexture( String name, TextureType type )
             {
-                TextureNativeSectionData tex = myTextureDict[ name ];
+                TextureNativeSectionData tex = ( type == TextureType.Diffuse ?
+                    myDiffTextureDict[ name ] : myMaskTextureDict[ name ] );
 
                 if ( !tex.Loaded )
                 {
@@ -158,6 +175,8 @@ namespace GTAMapViewer
 
                 if ( res == null )
                     throw new KeyNotFoundException( "File with name \"" + name + "\" not present in a loaded archive." );
+
+                stLoadedModels.Add( name, res );
             }
             else
                 res = stLoadedModels[ name ];
@@ -172,30 +191,45 @@ namespace GTAMapViewer
             --stLoadedModels[ name ].Uses;
         }
 
-        public static Texture2D LoadTexture( String name )
+        private static String GetTextureName( String name, TextureType type )
+        {
+            return type.ToString()[ 0 ] + "_" + name;
+        }
+
+        public static Texture2D LoadTexture( String name, TextureType type )
         {
             Resource<Texture2D> res = null;
 
-            if ( !stLoadedTextures.ContainsKey( name ) )
+            String rname = GetTextureName( name, type );
+
+            if ( !stLoadedTextures.ContainsKey( rname ) )
             {
                 foreach ( ImageArchive archive in stLoadedArchives )
                 {
-                    if ( archive.ContainsTexture( name ) )
+                    if ( archive.ContainsTexture( name, type ) )
                     {
-                        res = new Resource<Texture2D>( archive.LoadTexture( name ) );
+                        res = new Resource<Texture2D>( archive.LoadTexture( name, type ) );
                         break;
                     }
                 }
 
                 if ( res == null )
                     res = new Resource<Texture2D>( Texture2D.Missing );
+
+                stLoadedTextures.Add( rname, res );
             }
             else
-                res = stLoadedTextures[ name ];
+                res = stLoadedTextures[ rname ];
 
             ++res.Uses;
 
             return res.Value;
+        }
+
+        public static void UnloadTexture( String name, TextureType type )
+        {
+            String rname = GetTextureName( name, type );
+            --stLoadedTextures[ rname ].Uses;
         }
     }
 }

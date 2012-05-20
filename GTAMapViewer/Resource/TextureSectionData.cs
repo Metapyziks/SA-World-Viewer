@@ -33,9 +33,9 @@ namespace GTAMapViewer.Resource
         public override void LoadAdditionalResources()
         {
             if ( TextureName.Length > 0 )
-                Texture = ResourceManager.LoadTexture( TextureName );
+                Texture = ResourceManager.LoadTexture( TextureName, TextureType.Diffuse );
             if ( MaskName.Length > 0 )
-                Mask = ResourceManager.LoadTexture( MaskName );
+                Mask = ResourceManager.LoadTexture( MaskName, TextureType.Mask );
         }
     }
 }
