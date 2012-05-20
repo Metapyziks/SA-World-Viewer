@@ -30,27 +30,35 @@ namespace GTAMapViewer.Resource
 
     internal class TextureDictionary
     {
-        private Dictionary<String, TextureNativeSectionData> myDiffuseTextures;
-        private Dictionary<String, TextureNativeSectionData> myMaskTextures;
+        private Dictionary<String, Texture2D> myDiffuseTextures;
+        private Dictionary<String, Texture2D> myMaskTextures;
 
         public TextureDictionary( FramedStream stream )
         {
             Section sec = new Section( stream );
             TextureDictionarySectionData data = sec.Data as TextureDictionarySectionData;
 
-            myDiffuseTextures = new Dictionary<string, TextureNativeSectionData>();
-            myMaskTextures = new Dictionary<string, TextureNativeSectionData>();
+            myDiffuseTextures = new Dictionary<string, Texture2D>();
+            myMaskTextures = new Dictionary<string, Texture2D>();
 
             foreach ( TextureNativeSectionData tex in data.Textures )
             {
                 if ( tex.DiffuseName.Length > 0 )
-                    myDiffuseTextures.Add( tex.DiffuseName, tex );
+                    myDiffuseTextures.Add( tex.DiffuseName, tex.Texture );
                 if ( tex.AlphaName.Length > 0 )
-                    myMaskTextures.Add( tex.AlphaName, tex );
+                    myMaskTextures.Add( tex.AlphaName, tex.Texture );
             }
         }
 
-        public TextureNativeSectionData this[ String name, TextureType type ]
+        public bool Contains( String name, TextureType type )
+        {
+            if ( type == TextureType.Diffuse )
+                return myDiffuseTextures.ContainsKey( name );
+            else
+                return myMaskTextures.ContainsKey( name );
+        }
+
+        public Texture2D this[ String name, TextureType type ]
         {
             get
             {
@@ -59,11 +67,6 @@ namespace GTAMapViewer.Resource
                 else
                     return myMaskTextures[ name ];
             }
-        }
-
-        public Texture2D Load( String name, TextureType type )
-        {
-            return this[ name, type ].Texture;
         }
     }
 }

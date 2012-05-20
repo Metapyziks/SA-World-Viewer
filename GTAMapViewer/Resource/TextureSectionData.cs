@@ -33,9 +33,19 @@ namespace GTAMapViewer.Resource
         public void LoadTextures( TextureDictionary txd )
         {
             if ( TextureName.Length > 0 )
-                Texture = txd.Load( TextureName, TextureType.Diffuse );
+            {
+                if ( txd.Contains( TextureName, TextureType.Diffuse ) )
+                    Texture = txd[ TextureName, TextureType.Diffuse ];
+                else
+                    Texture = Texture2D.Missing;
+            }
             if ( MaskName.Length > 0 )
-                Mask = txd.Load( MaskName, TextureType.Mask );
+            {
+                if ( txd.Contains( TextureName, TextureType.Mask ) )
+                    Mask = txd[ TextureName, TextureType.Mask ];
+                else
+                    Mask = Texture2D.Missing;
+            }
         }
     }
 }
