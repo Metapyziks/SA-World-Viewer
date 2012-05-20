@@ -78,6 +78,9 @@ namespace GTAMapViewer
                     ImageArchiveEntry entry = new ImageArchiveEntry( stream );
                     myFileDict.Add( entry.Name, entry );
                 }
+
+                List<String> keys = new List<string>();
+                keys.AddRange( myFileDict.Keys.Where( x => x.EndsWith( ".ipl" ) ) );
             }
 
             public bool ContainsFile( String name )
@@ -142,9 +145,10 @@ namespace GTAMapViewer
             return res.Value;
         }
 
-        public static void UnloadModel( String name )
+        public static void UnloadModel( String name, String txdName )
         {
             --stLoadedModels[ name ].Uses;
+            UnloadTextureDictionary( txdName );
         }
 
         private static String GetTextureName( String name, String txdName, TextureType type )
@@ -161,7 +165,7 @@ namespace GTAMapViewer
 
             Resource<TextureDictionary> res = null;
 
-            if ( !stLoadedModels.ContainsKey( name ) )
+            if ( !stLoadedTexDicts.ContainsKey( name ) )
             {
                 foreach ( ImageArchive archive in stLoadedArchives )
                 {

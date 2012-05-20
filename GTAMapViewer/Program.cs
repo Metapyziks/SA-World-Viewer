@@ -13,8 +13,10 @@ namespace GTAMapViewer
             if ( args.Length > 0 )
                 Directory.SetCurrentDirectory( args[ 0 ] );
 
-            String modelPath = "models" + Path.DirectorySeparatorChar;
-            String dataPath = "data" + Path.DirectorySeparatorChar;
+            char sep = Path.DirectorySeparatorChar;
+
+            String modelPath = "models" + sep;
+            String dataPath = "data" + sep;
 
             try
             {
@@ -23,6 +25,7 @@ namespace GTAMapViewer
                 ResourceManager.LoadArchive( modelPath + "player.img" );
 
                 ItemManager.LoadDefinitionFiles( dataPath );
+                ItemManager.LoadPlacementFile( dataPath + "maps" + sep + "LA" + sep + "LAe.ipl" );
             }
             catch ( FileNotFoundException )
             {

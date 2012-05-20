@@ -9,6 +9,7 @@ using OpenTK.Graphics.OpenGL;
 
 using GTAMapViewer.Graphics;
 using GTAMapViewer.Resource;
+using GTAMapViewer.Items;
 
 namespace GTAMapViewer.Scenes
 {
@@ -17,7 +18,7 @@ namespace GTAMapViewer.Scenes
         private const float CameraMoveSpeed = 16.0f;
 
         private ModelShader myShader;
-        private Model myCurrentModel;
+        private Instance[] myInstances;
 
         private bool myIgnoreMouse;
         private bool myCaptureMouse;
@@ -40,8 +41,11 @@ namespace GTAMapViewer.Scenes
             if ( firstTime )
             {
                 myShader = new ModelShader( Width, Height );
-                myShader.CameraPosition = new Vector3( 0.0f, 0.0f, -8.0f );
-                myCurrentModel = ResourceManager.LoadModel( "LAbeach_03bx", "law_beach1" );
+                myShader.CameraPosition = new Vector3( -2063.132813f, 15.2734375f, -1731.78125f );
+                myInstances = ItemManager.GetInstances().ToArray();
+
+                foreach ( Instance inst in myInstances )
+                    inst.Object.Load();
             }
         }
 
@@ -57,9 +61,6 @@ namespace GTAMapViewer.Scenes
                 case (char) 0x1B:
                     myCaptureMouse = !myCaptureMouse;
                     CursorVisible = !myCaptureMouse;
-                    break;
-                case 'x':
-                    myCurrentModel.MaterialNumber++;
                     break;
             }
         }
@@ -127,7 +128,10 @@ namespace GTAMapViewer.Scenes
         public override void OnRenderFrame( OpenTK.FrameEventArgs e )
         {
             myShader.StartBatch();
-            myShader.Render( myCurrentModel );
+            foreach ( Instance inst in myInstances )
+            {
+                inst.Render( myShader );
+            }
             myShader.EndBatch();
         }
     }

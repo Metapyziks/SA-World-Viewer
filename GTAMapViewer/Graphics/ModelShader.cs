@@ -26,6 +26,12 @@ namespace GTAMapViewer.Graphics
         private Matrix4 myViewMatrix;
         private int myViewMatrixLoc;
 
+        private Vector3 myModelPos;
+        private int myModelPosLoc;
+
+        private Quaternion myModelRot;
+        private int myModelRotLoc;
+
         private Color4 myColour;
         private int myColourLoc;
 
@@ -72,6 +78,24 @@ namespace GTAMapViewer.Graphics
                 myPerspectiveChanged = true;
             }
         }
+        public Vector3 ModelPos
+        {
+            get { return myModelPos; }
+            set
+            {
+                myModelPos = value;
+                GL.Uniform3( myModelPosLoc, value );
+            }
+        }
+        public Quaternion ModelRot
+        {
+            get { return myModelRot; }
+            set
+            {
+                myModelRot = value;
+                GL.Uniform4( myModelRotLoc, value );
+            }
+        }
         public Color4 Colour
         {
             get { return myColour; }
@@ -95,6 +119,8 @@ namespace GTAMapViewer.Graphics
         {
             ShaderBuilder vert = new ShaderBuilder( ShaderType.VertexShader, false );
             vert.AddUniform( ShaderVarType.Mat4, "view_matrix" );
+            vert.AddUniform( ShaderVarType.Vec3, "model_pos" );
+            vert.AddUniform( ShaderVarType.Vec4, "model_rot" );
             vert.AddUniform( ShaderVarType.Vec4, "colour" );
             vert.AddUniform( ShaderVarType.Int, "flags" );
             vert.AddAttribute( ShaderVarType.Vec3, "in_position" );
@@ -103,9 +129,14 @@ namespace GTAMapViewer.Graphics
             vert.AddVarying( ShaderVarType.Vec2, "var_texcoord" );
             vert.AddVarying( ShaderVarType.Vec4, "var_colour" );
             vert.Logic = @"
+                vec3 qtransform( vec4 q, vec3 v )
+                { 
+	                return v + 2.0 * cross( cross( v, q.xyz ) + q.w * v, q.xyz );
+	            }
+
                 void main( void )
                 {
-                    gl_Position = view_matrix * vec4( in_position, 1 );
+                    gl_Position = view_matrix * vec4( qtransform( model_rot, in_position ) + model_pos, 1 );
                     var_texcoord = in_texcoord;
                     var_colour = ( ( flags & 1 ) != 0 ? colour * in_colour : colour );
                 }
@@ -120,7 +151,7 @@ namespace GTAMapViewer.Graphics
             frag.Logic = @"
                 void main( void )
                 {
-                    if( ( flags & 4 ) != 0 && texture2D( tex_mask, var_texcoord ).a == 0 )
+                    if( ( flags & 4 ) != 0 && texture2D( tex_mask, var_texcoord ).r < 0.125 )
                         discard;
                     else
                         out_frag_colour = texture2D( tex_diffuse, var_texcoord ) * var_colour;
@@ -168,9 +199,12 @@ namespace GTAMapViewer.Graphics
             AddTexture( "tex_mask", TextureUnit.Texture1 );
 
             myViewMatrixLoc = GL.GetUniformLocation( Program, "view_matrix" );
+            myModelPosLoc = GL.GetUniformLocation( Program, "model_pos" );
+            myModelRotLoc = GL.GetUniformLocation( Program, "model_rot" );
             myColourLoc = GL.GetUniformLocation( Program, "colour" );
             myFlagsLoc = GL.GetUniformLocation( Program, "flags" );
 
+            ModelPos = new Vector3();
             Colour = Color4.White;
             Flags = ModelFlags.Colour;
         }
@@ -178,7 +212,7 @@ namespace GTAMapViewer.Graphics
         private void UpdatePerspectiveMatrix()
         {
             PerspectiveMatrix = Matrix4.CreatePerspectiveFieldOfView( (float) Math.PI * ( 60.0f / 180.0f ),
-                (float) ScreenWidth / (float) ScreenHeight, 0.125f, 256.0f );
+                (float) ScreenWidth / (float) ScreenHeight, 0.125f, 1024.0f );
             UpdateViewMatrix();
 
             myPerspectiveChanged = false;

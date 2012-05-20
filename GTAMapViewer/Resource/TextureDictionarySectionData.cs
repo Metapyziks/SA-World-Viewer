@@ -43,9 +43,9 @@ namespace GTAMapViewer.Resource
 
             foreach ( TextureNativeSectionData tex in data.Textures )
             {
-                if ( tex.DiffuseName.Length > 0 )
+                if ( tex.DiffuseName.Length > 0 && !myDiffuseTextures.ContainsKey( tex.DiffuseName ) )
                     myDiffuseTextures.Add( tex.DiffuseName, tex.Texture );
-                if ( tex.AlphaName.Length > 0 )
+                if ( tex.AlphaName.Length > 0 && !myMaskTextures.ContainsKey( tex.AlphaName ) )
                     myMaskTextures.Add( tex.AlphaName, tex.Texture );
             }
         }

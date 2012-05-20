@@ -52,6 +52,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Items\Instance.cs" />
     <Compile Include="Items\ObjectDefinition.cs" />
     <Compile Include="Items\ItemManager.cs" />
     <Compile Include="Items\ObjectFlag.cs" />
