@@ -59,6 +59,7 @@ namespace GTAMapViewer.Resource
                     if ( mat.Material.TextureCount > 0 )
                     {
                         shader.SetTexture( "tex", mat.Material.Textures[ 0 ].Texture );
+                        shader.Colour = mat.Material.Colour;
                         GL.DrawElements( BeginMode.TriangleStrip, mat.VertexCount, DrawElementsType.UnsignedShort, mat.Offset * sizeof( UInt16 ) );
                     }
                 }

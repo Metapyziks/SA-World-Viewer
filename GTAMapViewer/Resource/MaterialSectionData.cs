@@ -4,12 +4,14 @@ using System.Linq;
 using System.Text;
 using System.IO;
 
+using OpenTK.Graphics;
+
 namespace GTAMapViewer.Resource
 {
     [SectionType( SectionType.Material )]
     internal class MaterialSectionData : SectionData
     {
-        public readonly UInt32 Colour;
+        public readonly Color4 Colour;
         public readonly UInt32 TextureCount;
         public readonly TextureSectionData[] Textures;
 
@@ -19,7 +21,7 @@ namespace GTAMapViewer.Resource
             BinaryReader reader = new BinaryReader( stream );
 
             reader.ReadUInt32(); // Unknown
-            Colour = reader.ReadUInt32();
+            Colour = new Color4( reader.ReadByte(), reader.ReadByte(), reader.ReadByte(), reader.ReadByte() );
             var unk = reader.ReadUInt32(); // Unknown
             TextureCount = reader.ReadUInt32();
             Textures = new TextureSectionData[ TextureCount ]; 

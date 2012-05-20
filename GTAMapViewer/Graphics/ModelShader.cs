@@ -5,6 +5,7 @@ using System.Text;
 using System.Drawing;
 
 using OpenTK;
+using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 
 using GTAMapViewer.Resource;
@@ -18,11 +19,15 @@ namespace GTAMapViewer.Graphics
         private Matrix4 myViewMatrix;
         private int myViewMatrixLoc;
 
+        private Color4 myColour;
+        private int myColourLoc;
+
         private Vector3 myCameraPosition;
         private Vector2 myCameraRotation;
         private Matrix4 myPerspectiveMatrix;
 
         private bool myPerspectiveChanged;
+        private bool myColourChanged;
         private bool myViewChanged;
 
         public int ScreenWidth { get; private set; }
@@ -58,11 +63,21 @@ namespace GTAMapViewer.Graphics
                 myPerspectiveChanged = true;
             }
         }
+        public Color4 Colour
+        {
+            get { return myColour; }
+            set
+            {
+                myColour = value;
+                myColourChanged = true;
+            }
+        }
 
         public ModelShader()
         {
             ShaderBuilder vert = new ShaderBuilder( ShaderType.VertexShader, false );
             vert.AddUniform( ShaderVarType.Mat4, "view_matrix" );
+            vert.AddUniform( ShaderVarType.Vec4, "colour" );
             vert.AddAttribute( ShaderVarType.Vec3, "in_position" );
             vert.AddAttribute( ShaderVarType.Vec2, "in_texcoord" );
             vert.AddAttribute( ShaderVarType.Vec4, "in_colour" );
@@ -73,7 +88,7 @@ namespace GTAMapViewer.Graphics
                 {
                     gl_Position = view_matrix * vec4( in_position, 1 );
                     var_texcoord = in_texcoord;
-                    var_colour = in_colour;
+                    var_colour = in_colour * colour;
                 }
             ";
 
@@ -97,7 +112,10 @@ namespace GTAMapViewer.Graphics
             myCameraPosition = new Vector3();
             myCameraRotation = new Vector2( MathHelper.Pi * 30.0f / 180.0f, 0.0f );
 
+            myColour = Color4.White;
+
             myPerspectiveChanged = true;
+            myColourChanged = true;
             myViewChanged = true;
         }
 
@@ -126,6 +144,7 @@ namespace GTAMapViewer.Graphics
             AddTexture( "tex", TextureUnit.Texture0 );
 
             myViewMatrixLoc = GL.GetUniformLocation( Program, "view_matrix" );
+            myColourLoc = GL.GetUniformLocation( Program, "colour" );
         }
 
         private void UpdatePerspectiveMatrix()
@@ -135,6 +154,13 @@ namespace GTAMapViewer.Graphics
             UpdateViewMatrix();
 
             myPerspectiveChanged = false;
+        }
+
+        private void UpdateColour()
+        {
+            GL.Uniform4( myColourLoc, myColour );
+
+            myColourChanged = false;
         }
 
         private void UpdateViewMatrix()
@@ -155,9 +181,12 @@ namespace GTAMapViewer.Graphics
                 UpdatePerspectiveMatrix();
             else if ( myViewChanged )
                 UpdateViewMatrix();
+            if ( myColourChanged )
+                UpdateColour();
 
             GL.Enable( EnableCap.DepthTest );
             GL.Enable( EnableCap.CullFace );
+            GL.Enable( EnableCap.Blend );
             GL.Enable( EnableCap.PrimitiveRestart );
 
             GL.CullFace( CullFaceMode.Back );
@@ -187,6 +216,7 @@ namespace GTAMapViewer.Graphics
 
             GL.Disable( EnableCap.DepthTest );
             GL.Disable ( EnableCap.CullFace );
+            GL.Disable( EnableCap.Blend );
             GL.Disable( EnableCap.PrimitiveRestart );
         }
     }
