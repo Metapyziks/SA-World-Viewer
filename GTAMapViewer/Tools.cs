@@ -258,7 +258,7 @@ namespace GTAMapViewer
         {
             return new Vector3
             {
-                X = reader.ReadSingle(),
+                X = -reader.ReadSingle(),
                 Z = reader.ReadSingle(),
                 Y = reader.ReadSingle()
             };

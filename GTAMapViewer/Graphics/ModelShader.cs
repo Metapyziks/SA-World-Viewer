@@ -65,23 +65,27 @@ namespace GTAMapViewer.Graphics
             vert.AddUniform( ShaderVarType.Mat4, "view_matrix" );
             vert.AddAttribute( ShaderVarType.Vec3, "in_position" );
             vert.AddAttribute( ShaderVarType.Vec2, "in_texcoord" );
+            vert.AddAttribute( ShaderVarType.Vec4, "in_colour" );
             vert.AddVarying( ShaderVarType.Vec2, "var_texcoord" );
+            vert.AddVarying( ShaderVarType.Vec4, "var_colour" );
             vert.Logic = @"
                 void main( void )
                 {
                     gl_Position = view_matrix * vec4( in_position, 1 );
                     var_texcoord = in_texcoord;
+                    var_colour = in_colour;
                 }
             ";
 
             ShaderBuilder frag = new ShaderBuilder( ShaderType.FragmentShader, false );
             frag.AddUniform( ShaderVarType.Sampler2D, "tex" );
             frag.AddVarying( ShaderVarType.Vec2, "var_texcoord" );
+            frag.AddVarying( ShaderVarType.Vec4, "var_colour" );
             frag.Logic = @"
                 void main( void )
                 {
                     // out_frag_colour = vec4( var_texcoord, 1.0, 1.0 );
-                    out_frag_colour = texture2D( tex, var_texcoord );
+                    out_frag_colour = texture2D( tex, var_texcoord ) * var_colour;
                 }
             ";
 
@@ -117,6 +121,7 @@ namespace GTAMapViewer.Graphics
 
             AddAttribute( "in_position", 3 );
             AddAttribute( "in_texcoord", 2 );
+            AddAttribute( "in_colour", 4 );
 
             AddTexture( "tex", TextureUnit.Texture0 );
 
@@ -155,8 +160,8 @@ namespace GTAMapViewer.Graphics
             GL.Enable( EnableCap.CullFace );
             GL.Enable( EnableCap.PrimitiveRestart );
 
-            GL.CullFace( CullFaceMode.Front );
-            GL.BlendFunc( BlendingFactorSrc.One, BlendingFactorDest.Zero );
+            GL.CullFace( CullFaceMode.Back );
+            GL.BlendFunc( BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha );
             GL.PrimitiveRestartIndex( 0xffff );
 
             myCurrentModel = null;

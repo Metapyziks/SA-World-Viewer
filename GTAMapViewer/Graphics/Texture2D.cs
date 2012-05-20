@@ -33,18 +33,7 @@ namespace GTAMapViewer.Graphics
             Width = bitmap.Width;
             Height = bitmap.Height;
 
-            int size = GetNextPOTS( bitmap.Width, bitmap.Height );
-
-            if ( size == bitmap.Width && size == bitmap.Height )
-                Bitmap = bitmap;
-            else
-            {
-                Bitmap = new Bitmap( size, size );
-
-                for ( int x = 0; x < Width; ++x )
-                    for ( int y = 0; y < Height; ++y )
-                        Bitmap.SetPixel( x, y, bitmap.GetPixel( x, y ) );
-            }
+            Bitmap = bitmap;
         }
 
         public Vector2 GetCoords( Vector2 pos )

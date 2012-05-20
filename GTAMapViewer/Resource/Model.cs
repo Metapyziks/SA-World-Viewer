@@ -14,6 +14,8 @@ namespace GTAMapViewer.Resource
 
         public VertexBuffer VertexBuffer { get; private set; }
 
+        public int MaterialNumber;
+
         public Model( FramedStream stream )
         {
             List<GeometrySectionData> geos = new List<GeometrySectionData>();
@@ -28,9 +30,11 @@ namespace GTAMapViewer.Resource
             }
             myGeometry = geos.ToArray();
 
-            VertexBuffer = new VertexBuffer( 5 );
+            VertexBuffer = new VertexBuffer( 9 );
             GeometrySectionData geo = myGeometry[ 0 ];
             VertexBuffer.SetData( geo.GetVertices(), geo.GetIndices() );
+
+            MaterialNumber = geo.MaterialSplits.Length;
         }
 
         public void LoadAdditionalResources()
@@ -44,12 +48,19 @@ namespace GTAMapViewer.Resource
             if ( !VertexBuffer.DataSet )
                 return;
 
-            foreach ( GeometrySectionData geo in myGeometry )
+            int i = 0;
+            GeometrySectionData geo = myGeometry[ 0 ];
+            int count = geo.MaterialSplits.Length;
+            int mno = MaterialNumber % ( count + 1 );
+            foreach ( MaterialSplit mat in geo.MaterialSplits )
             {
-                foreach ( MaterialSplit mat in geo.MaterialSplits )
+                if ( i++ == mno || mno == count )
                 {
-                    shader.SetTexture( "tex", geo.Materials[ mat.MaterialIndex ].Textures[ 0 ].Texture );
-                    GL.DrawElements( BeginMode.TriangleStrip, mat.VertexCount, DrawElementsType.UnsignedShort, mat.Offset );
+                    if ( mat.Material.TextureCount > 0 )
+                    {
+                        shader.SetTexture( "tex", mat.Material.Textures[ 0 ].Texture );
+                        GL.DrawElements( BeginMode.TriangleStrip, mat.VertexCount, DrawElementsType.UnsignedShort, mat.Offset * sizeof( UInt16 ) );
+                    }
                 }
             }
         }

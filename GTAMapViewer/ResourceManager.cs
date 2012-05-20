@@ -137,6 +137,8 @@ namespace GTAMapViewer
 
         public static Model LoadModel( String name )
         {
+            name = name.ToLower();
+
             if ( !name.EndsWith( ".dff" ) )
                 name += ".dff";
 

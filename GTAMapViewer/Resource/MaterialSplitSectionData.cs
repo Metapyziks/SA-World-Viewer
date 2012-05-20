@@ -13,6 +13,8 @@ namespace GTAMapViewer.Resource
         public readonly UInt16 MaterialIndex;
         public readonly UInt16[] FaceIndices;
 
+        public MaterialSectionData Material;
+
         public MaterialSplit( UInt16 offset, FramedStream stream )
         {
             Offset = offset;
@@ -52,6 +54,9 @@ namespace GTAMapViewer.Resource
                 MaterialSplits[ i ] = new MaterialSplit( IndexCount, stream );
                 IndexCount += MaterialSplits[ i ].VertexCount;
             }
+
+            if ( FaceCount + SplitCount != IndexCount )
+                throw new Exception( "Bad model format" );
         }
     }
 }

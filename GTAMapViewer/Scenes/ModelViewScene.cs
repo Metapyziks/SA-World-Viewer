@@ -33,13 +33,15 @@ namespace GTAMapViewer.Scenes
         {
             base.OnEnter( firstTime );
 
+            GL.ClearColor( OpenTK.Graphics.Color4.CornflowerBlue );
+
             CursorVisible = !myCaptureMouse;
 
             if ( firstTime )
             {
                 myShader = new ModelShader( Width, Height );
                 myShader.CameraPosition = new Vector3( 0.0f, 0.0f, -8.0f );
-                myCurrentModel = ResourceManager.LoadModel( "statue.dff" );
+                myCurrentModel = ResourceManager.LoadModel( "laeskateparkLA.dff" );
             }
         }
 
@@ -55,6 +57,9 @@ namespace GTAMapViewer.Scenes
                 case (char) 0x1B:
                     myCaptureMouse = !myCaptureMouse;
                     CursorVisible = !myCaptureMouse;
+                    break;
+                case 'x':
+                    myCurrentModel.MaterialNumber++;
                     break;
             }
         }

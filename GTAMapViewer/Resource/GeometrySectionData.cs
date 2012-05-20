@@ -56,7 +56,7 @@ namespace GTAMapViewer.Resource
         public readonly float Diffuse;
         public readonly float Specular;
 
-        public readonly UInt32[] Colours;
+        public readonly Color4[] Colours;
         public readonly Vector2[] TexCoords;
         public readonly FaceInfo[] Faces;
 
@@ -92,9 +92,15 @@ namespace GTAMapViewer.Resource
 
             if ( ( Flags & GeometryFlag.Colors ) != 0 )
             {
-                Colours = new UInt32[ VertexCount ];
+                Colours = new Color4[ VertexCount ];
                 for ( int i = 0; i < VertexCount; ++i )
-                    Colours[ i ] = reader.ReadUInt32();
+                {
+                    byte r = reader.ReadByte();
+                    byte g = reader.ReadByte();
+                    byte b = reader.ReadByte();
+                    byte a = reader.ReadByte();
+                    Colours[ i ] = new Color4( r, g, b, a );
+                }
             }
 
             if ( ( Flags & GeometryFlag.TexCoords ) != 0 )
@@ -134,20 +140,32 @@ namespace GTAMapViewer.Resource
             MaterialSplits = msplits.MaterialSplits;
             FaceCount = msplits.FaceCount;
             IndexCount = msplits.IndexCount;
+
+            foreach ( MaterialSplit mat in MaterialSplits )
+                mat.Material = Materials[ mat.MaterialIndex ];
         }
 
         public float[] GetVertices()
         {
-            float[] data = new float[ VertexCount * 5 ];
+            int s = 9;
+            float[] data = new float[ VertexCount * s ];
             for ( int i = 0; i < VertexCount; ++i )
             {
-                data[ i * 5 ] = Vertices[ i ].X;
-                data[ i * 5 + 1 ] = Vertices[ i ].Y;
-                data[ i * 5 + 2 ] = Vertices[ i ].Z;
+                int o = i * s;
+                data[ o ] = Vertices[ i ].X;
+                data[ o + 1 ] = Vertices[ i ].Y;
+                data[ o + 2 ] = Vertices[ i ].Z;
                 if ( TexCoords != null )
                 {
-                    data[ i * 5 + 3 ] = TexCoords[ i ].X;
-                    data[ i * 5 + 4 ] = TexCoords[ i ].Y;
+                    data[ o + 3 ] = TexCoords[ i ].X;
+                    data[ o + 4 ] = TexCoords[ i ].Y;
+                }
+                if ( Colours != null )
+                {
+                    data[ o + 5 ] = Colours[ i ].R;
+                    data[ o + 6 ] = Colours[ i ].G;
+                    data[ o + 7 ] = Colours[ i ].B;
+                    data[ o + 8 ] = Colours[ i ].A;
                 }
             }
             return data;
