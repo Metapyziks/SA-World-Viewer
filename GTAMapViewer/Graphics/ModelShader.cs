@@ -14,13 +14,6 @@ namespace GTAMapViewer.Graphics
 {
     internal class ModelShader : ShaderProgram
     {
-        public enum ModelFlags : int
-        {
-            Colour = 1,
-            Diffuse = 2,
-            Mask = 4
-        }
-
         private Model myCurrentModel;
 
         private Matrix4 myViewMatrix;
@@ -35,8 +28,8 @@ namespace GTAMapViewer.Graphics
         private Color4 myColour;
         private int myColourLoc;
 
-        private ModelFlags myFlags;
-        private int myFlagsLoc;
+        private bool myAlphaMask;
+        private int myAlphaMaskLoc;
 
         private Vector3 myCameraPosition;
         private Vector2 myCameraRotation;
@@ -44,6 +37,8 @@ namespace GTAMapViewer.Graphics
 
         private bool myPerspectiveChanged;
         private bool myViewChanged;
+
+        private bool myBackfaceCulling;
 
         public int ScreenWidth { get; private set; }
         public int ScreenHeight { get; private set; }
@@ -105,13 +100,32 @@ namespace GTAMapViewer.Graphics
                 GL.Uniform4( myColourLoc, value );
             }
         }
-        public ModelFlags Flags
+        public bool AlphaMask
         {
-            get { return myFlags; }
+            get { return myAlphaMask; }
             set
             {
-                myFlags = value;
-                GL.Uniform1( myFlagsLoc, (int) value );
+                if ( value != myAlphaMask )
+                {
+                    myAlphaMask = value;
+                    GL.Uniform1( myAlphaMaskLoc, value ? 1 : 0 );
+                }
+            }
+        }
+
+        public bool BackfaceCulling
+        {
+            get { return myBackfaceCulling; }
+            set
+            {
+                if ( myBackfaceCulling != value )
+                {
+                    myBackfaceCulling = value;
+                    if ( value )
+                        GL.Enable( EnableCap.CullFace );
+                    else
+                        GL.Disable( EnableCap.CullFace );
+                }
             }
         }
 
@@ -122,7 +136,6 @@ namespace GTAMapViewer.Graphics
             vert.AddUniform( ShaderVarType.Vec3, "model_pos" );
             vert.AddUniform( ShaderVarType.Vec4, "model_rot" );
             vert.AddUniform( ShaderVarType.Vec4, "colour" );
-            vert.AddUniform( ShaderVarType.Int, "flags" );
             vert.AddAttribute( ShaderVarType.Vec3, "in_position" );
             vert.AddAttribute( ShaderVarType.Vec2, "in_texcoord" );
             vert.AddAttribute( ShaderVarType.Vec4, "in_colour" );
@@ -138,28 +151,25 @@ namespace GTAMapViewer.Graphics
                 {
                     gl_Position = view_matrix * vec4( qtransform( model_rot, in_position ) + model_pos, 1 );
                     var_texcoord = in_texcoord;
-                    var_colour = ( ( flags & 1 ) != 0 ? colour * in_colour : colour );
+                    var_colour = colour * in_colour;
                 }
             ";
 
             ShaderBuilder frag = new ShaderBuilder( ShaderType.FragmentShader, false );
             frag.AddUniform( ShaderVarType.Sampler2D, "tex_diffuse" );
             frag.AddUniform( ShaderVarType.Sampler2D, "tex_mask" );
-            frag.AddUniform( ShaderVarType.Int, "flags" );
+            frag.AddUniform( ShaderVarType.Bool, "flag_mask" );
             frag.AddVarying( ShaderVarType.Vec2, "var_texcoord" );
             frag.AddVarying( ShaderVarType.Vec4, "var_colour" );
             frag.Logic = @"
                 void main( void )
                 {
-                    if( ( flags & 4 ) != 0 )
-                    {
-                        if( texture2D( tex_mask, var_texcoord ).r < 0.125 )
-                            discard;
-                        else
-                            out_frag_colour = vec4( texture2D( tex_diffuse, var_texcoord ).rgb * var_colour.rgb, 1.0 );
-                    }
-                    else
-                        out_frag_colour = texture2D( tex_diffuse, var_texcoord ) * var_colour;
+                    if( var_colour.a == 0.0 )
+                        discard;
+                    vec3 clr = texture2D( tex_diffuse, var_texcoord ).rgb;
+                    if( flag_mask && texture2D( tex_mask, var_texcoord ).a == 0.0 )
+                        discard;
+                    out_frag_colour = vec4( clr * var_colour.rgb, var_colour.a );
                 }
             ";
 
@@ -172,10 +182,12 @@ namespace GTAMapViewer.Graphics
             myCameraRotation = new Vector2( MathHelper.Pi * 30.0f / 180.0f, 0.0f );
 
             myColour = Color4.White;
-            myFlags = ModelFlags.Colour;
+            myAlphaMask = false;
 
             myPerspectiveChanged = true;
             myViewChanged = true;
+
+            myBackfaceCulling = false;
         }
 
         public ModelShader( int width, int height )
@@ -207,11 +219,11 @@ namespace GTAMapViewer.Graphics
             myModelPosLoc = GL.GetUniformLocation( Program, "model_pos" );
             myModelRotLoc = GL.GetUniformLocation( Program, "model_rot" );
             myColourLoc = GL.GetUniformLocation( Program, "colour" );
-            myFlagsLoc = GL.GetUniformLocation( Program, "flags" );
+            myAlphaMaskLoc = GL.GetUniformLocation( Program, "flag_mask" );
 
             ModelPos = new Vector3();
             Colour = Color4.White;
-            Flags = ModelFlags.Colour;
+            AlphaMask = false;
         }
 
         private void UpdatePerspectiveMatrix()
@@ -243,7 +255,6 @@ namespace GTAMapViewer.Graphics
                 UpdateViewMatrix();
 
             GL.Enable( EnableCap.DepthTest );
-            GL.Enable( EnableCap.CullFace );
             GL.Enable( EnableCap.Blend );
             GL.Enable( EnableCap.PrimitiveRestart );
 
@@ -273,7 +284,6 @@ namespace GTAMapViewer.Graphics
                 myCurrentModel.VertexBuffer.EndBatch( this );
 
             GL.Disable( EnableCap.DepthTest );
-            GL.Disable ( EnableCap.CullFace );
             GL.Disable( EnableCap.Blend );
             GL.Disable( EnableCap.PrimitiveRestart );
         }

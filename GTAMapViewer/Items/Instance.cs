@@ -64,14 +64,32 @@ namespace GTAMapViewer.Items
                 LOD.IsLOD = true;
         }
 
+        public void Load()
+        {
+            if ( HasLOD )
+                LOD.Load();
+
+            Object.Load();
+        }
+
         public void Render( ModelShader shader )
         {
-            if ( Object.ModelLoaded )
+            if ( ( shader.CameraPosition - Position ).LengthSquared <= Object.DrawDist2 * 2 )
             {
-                shader.ModelPos = Position;
-                shader.ModelRot = Rotation;
-                shader.Render( Object.Model );
+                if ( !Object.Loaded )
+                    Object.Load();
+
+                if ( Object.Model != null )
+                {
+                    shader.ModelPos = Position;
+                    shader.ModelRot = Rotation;
+                    shader.BackfaceCulling = !Object.HasFlags( ObjectFlag.NoBackCull );
+
+                    shader.Render( Object.Model );
+                }
             }
+            else if ( HasLOD )
+                LOD.Render( shader );
         }
     }
 }

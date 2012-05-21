@@ -6,6 +6,8 @@ using System.IO;
 
 using OpenTK;
 
+using GTAMapViewer.Resource;
+
 namespace GTAMapViewer.Items
 {
     internal static class ItemManager
@@ -47,6 +49,24 @@ namespace GTAMapViewer.Items
                 float rotW = float.Parse( args[ 9 ] );
                 Rotation = new Quaternion( rotX, rotY, rotZ, rotW );
                 LODIndex = int.Parse( args[ 10 ] );
+            }
+
+            public InstPlacement( FramedStream stream )
+            {
+                BinaryReader reader = new BinaryReader( stream );
+
+                float posX = -reader.ReadSingle();
+                float posZ = reader.ReadSingle();
+                float posY = reader.ReadSingle();
+                Position = new Vector3( posX, posY, posZ );
+                float rotX = -reader.ReadSingle();
+                float rotZ = reader.ReadSingle();
+                float rotY = reader.ReadSingle();
+                float rotW = reader.ReadSingle();
+                Rotation = new Quaternion( rotX, rotY, rotZ, rotW );
+                ID = reader.ReadUInt32();
+                Interior = reader.ReadInt32();
+                LODIndex = reader.ReadInt32();
             }
 
             public void Place( Instance inst, Instance[] batch )
@@ -137,14 +157,44 @@ namespace GTAMapViewer.Items
             }
         }
 
-        public static void LoadPlacementFile( String filePath )
+        public static void LoadGameFile( String filePath )
         {
             using ( FileStream stream = new FileStream( filePath, FileMode.Open, FileAccess.Read ) )
             {
                 StreamReader reader = new StreamReader( stream );
-                PlaceType curType = PlaceType.None;
+                while ( !reader.EndOfStream )
+                {
+                    String line = reader.ReadLine().Trim();
+                    if ( line.Length == 0 || line.StartsWith( "#" ) )
+                        continue;
 
-                List<InstPlacement> newPlacements = new List<InstPlacement>();
+                    if ( line.StartsWith( "IMG" ) )
+                    {
+                        String path = line.Substring( 3 ).Trim();
+                        ResourceManager.LoadArchive( path );
+                    }
+                    else if ( line.StartsWith( "IDE" ) )
+                    {
+                        String path = line.Substring( 3 ).Trim();
+                        ItemManager.LoadDefinitionFile( path );
+                    }
+                    else if ( line.StartsWith( "IPL" ) )
+                    {
+                        String path = line.Substring( 3 ).Trim();
+                        ItemManager.LoadPlacementFile( path );
+                    }
+                }
+            }
+        }
+
+        public static void LoadPlacementFile( String filePath )
+        {
+            List<InstPlacement> newPlacements = new List<InstPlacement>();
+
+            using ( FileStream stream = new FileStream( filePath, FileMode.Open, FileAccess.Read ) )
+            {
+                StreamReader reader = new StreamReader( stream );
+                PlaceType curType = PlaceType.None;
 
                 while ( !reader.EndOfStream )
                 {
@@ -160,7 +210,6 @@ namespace GTAMapViewer.Items
                             {
                                 case "inst":
                                     curType = PlaceType.Inst;
-                                    newPlacements = new List<InstPlacement>();
                                     break;
                             }
                         }
@@ -169,17 +218,6 @@ namespace GTAMapViewer.Items
                     {
                         if ( line.ToLower() == "end" )
                         {
-                            switch ( curType )
-                            {
-                                case PlaceType.Inst:
-                                    Instance[] newInsts = new Instance[ newPlacements.Count ];
-                                    for ( int i = 0; i < newInsts.Length; ++i )
-                                        newInsts[ i ] = new Instance( newPlacements[ i ].ID );
-                                    for ( int i = 0; i < newInsts.Length; ++i )
-                                        newPlacements[ i ].Place( newInsts[ i ], newInsts );
-                                    stInstances.AddRange( newInsts.Where( x => !x.IsLOD && x.Object != null ) );
-                                    break;
-                            }
                             curType = PlaceType.None;
                         }
                         else
@@ -198,6 +236,41 @@ namespace GTAMapViewer.Items
                     }
                 }
             }
+
+            String namePrefix = Path.GetFileNameWithoutExtension( filePath ).ToLower() + "_stream";
+            for ( int i = 0; i < 100; ++i )
+            {
+                String name = namePrefix + i.ToString() + ".ipl";
+                FramedStream stream = ResourceManager.ReadFile( name );
+
+                if ( stream == null )
+                    break;
+
+                BinaryReader reader = new BinaryReader( stream );
+
+                String ident = reader.ReadString( 4 );
+                if ( ident != "bnry" )
+                    break;
+
+                int instCount = reader.ReadInt32();
+                stream.Seek( 12, SeekOrigin.Current );
+                int carsCount = reader.ReadInt32();
+                stream.Seek( 4, SeekOrigin.Current );
+                int instOffset = reader.ReadInt32();
+                stream.Seek( 28, SeekOrigin.Current );
+                int carsOffset = reader.ReadInt32();
+                stream.Seek( instOffset, SeekOrigin.Begin );
+
+                for ( int j = 0; j < instCount; ++j )
+                    newPlacements.Add( new InstPlacement( stream ) );
+            }
+
+            Instance[] newInsts = new Instance[ newPlacements.Count ];
+            for ( int i = 0; i < newInsts.Length; ++i )
+                newInsts[ i ] = new Instance( newPlacements[ i ].ID );
+            for ( int i = 0; i < newInsts.Length; ++i )
+                newPlacements[ i ].Place( newInsts[ i ], newInsts );
+            stInstances.AddRange( newInsts.Where( x => !x.IsLOD && x.Object != null ) );
         }
 
         public static ObjectDefinition GetObject( UInt32 id )

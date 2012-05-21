@@ -69,7 +69,7 @@ namespace GTAMapViewer.Resource
         public readonly byte MipMapCount;
         public readonly byte RasterType;
         public readonly UInt32 ImageDataSize;
-        public readonly byte[] ImageData;
+        public readonly byte[][] ImageLevelData;
 
         public TextureNativeSectionData( SectionHeader header, FramedStream stream )
         {
@@ -115,7 +115,17 @@ namespace GTAMapViewer.Resource
                 Compression = (CompressionMode) reader.ReadByte();
 
             ImageDataSize = reader.ReadUInt32();
-            ImageData = reader.ReadBytes( (int) ImageDataSize );
+            if ( ( Format & RasterFormat.ExtMipMap ) != 0 )
+            {
+                ImageLevelData = new byte[ MipMapCount ][];
+                for ( int i = 0; i < MipMapCount; ++i )
+                    ImageLevelData[ i ] = reader.ReadBytes( (int) ImageDataSize >> ( 2 * i ) );
+            }
+            else
+            {
+                ImageLevelData = new byte[ 1 ][];
+                ImageLevelData[ 0 ] = reader.ReadBytes( (int) ImageDataSize );
+            }
         }
 
         private static Color DecodeColor( UInt16 val, bool alpha )

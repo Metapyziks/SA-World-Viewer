@@ -29,8 +29,11 @@ namespace GTAMapViewer.Resource
             myGeometry = geos.ToArray();
 
             VertexBuffer = new VertexBuffer( 9 );
-            GeometrySectionData geo = myGeometry[ 0 ];
-            VertexBuffer.SetData( geo.GetVertices(), geo.GetIndices() );
+            if ( myGeometry.Length > 0 )
+            {
+                GeometrySectionData geo = myGeometry[ 0 ];
+                VertexBuffer.SetData( geo.GetVertices(), geo.GetIndices() );
+            }
         }
 
         public void LoadTextures( TextureDictionary txd )
@@ -50,19 +53,17 @@ namespace GTAMapViewer.Resource
                 if ( mat.Material.TextureCount > 0 )
                 {
                     TextureSectionData tex = mat.Material.Textures[ 0 ];
-                    ModelShader.ModelFlags flags = ModelShader.ModelFlags.Colour;
-                    if ( tex.TextureName.Length > 0 )
-                    {
+                    if ( tex.Texture != null )
                         shader.SetTexture( "tex_diffuse", tex.Texture );
-                        flags |= ModelShader.ModelFlags.Diffuse;
-                    }
-                    if ( tex.MaskName.Length > 0 )
+                    if ( tex.Mask != null )
                     {
                         shader.SetTexture( "tex_mask", tex.Mask );
-                        flags |= ModelShader.ModelFlags.Mask;
+                        shader.AlphaMask = true;
                     }
+                    else
+                        shader.AlphaMask = false;
+
                     shader.Colour = mat.Material.Colour;
-                    shader.Flags = flags;
                     GL.DrawElements( BeginMode.TriangleStrip, mat.VertexCount, DrawElementsType.UnsignedShort, mat.Offset * sizeof( UInt16 ) );
                 }
             }

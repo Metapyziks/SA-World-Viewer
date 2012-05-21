@@ -24,17 +24,7 @@ namespace GTAMapViewer
                 ResourceManager.LoadArchive( modelPath + "gta_int.img" );
                 ResourceManager.LoadArchive( modelPath + "player.img" );
 
-                ItemManager.LoadDefinitionFiles( dataPath );
-                ItemManager.LoadPlacementFile( dataPath + "maps" + sep + "LA" + sep + "LAe.ipl" );
-                ItemManager.LoadPlacementFile( dataPath + "maps" + sep + "LA" + sep + "LAe2.ipl" );
-                ItemManager.LoadPlacementFile( dataPath + "maps" + sep + "LA" + sep + "LAhills.ipl" );
-                ItemManager.LoadPlacementFile( dataPath + "maps" + sep + "LA" + sep + "LAn.ipl" );
-                ItemManager.LoadPlacementFile( dataPath + "maps" + sep + "LA" + sep + "LAn2.ipl" );
-                ItemManager.LoadPlacementFile( dataPath + "maps" + sep + "LA" + sep + "LAs.ipl" );
-                ItemManager.LoadPlacementFile( dataPath + "maps" + sep + "LA" + sep + "LAs2.ipl" );
-                ItemManager.LoadPlacementFile( dataPath + "maps" + sep + "LA" + sep + "LAw.ipl" );
-                ItemManager.LoadPlacementFile( dataPath + "maps" + sep + "LA" + sep + "LAw2.ipl" );
-                ItemManager.LoadPlacementFile( dataPath + "maps" + sep + "LA" + sep + "LAWn.ipl" );
+                ItemManager.LoadGameFile( dataPath + "gta.dat" );
             }
             catch ( FileNotFoundException )
             {

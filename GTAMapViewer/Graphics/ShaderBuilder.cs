@@ -8,6 +8,7 @@ namespace GTAMapViewer.Graphics
 {
     public enum ShaderVarType
     {
+        Bool,
         Int,
         Float,
         Vec2,

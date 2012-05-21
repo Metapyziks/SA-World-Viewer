@@ -18,12 +18,14 @@ namespace GTAMapViewer.Items
             private set;
         }
 
-        public bool ModelLoaded
+        public bool Loaded
         {
-            get { return Model != null; }
+            get;
+            private set;
         }
 
         public readonly float DrawDist;
+        public readonly float DrawDist2;
         public readonly ObjectFlag Flags;
 
         public ObjectDefinition( String model, String txd, float drawDist, ObjectFlag flags )
@@ -31,7 +33,10 @@ namespace GTAMapViewer.Items
             ModelName = model;
             TextureDictName = txd;
             DrawDist = drawDist;
+            DrawDist2 = DrawDist * DrawDist;
             Flags = flags;
+
+            Loaded = false;
         }
 
         public bool HasFlags( ObjectFlag flag )
@@ -42,12 +47,14 @@ namespace GTAMapViewer.Items
         public void Load()
         {
             Model = ResourceManager.LoadModel( ModelName, TextureDictName );
+            Loaded = true;
         }
 
         public void Unload()
         {
             ResourceManager.UnloadModel( ModelName, TextureDictName );
             Model = null;
+            Loaded = false;
         }
     }
 }

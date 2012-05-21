@@ -121,6 +121,24 @@ namespace GTAMapViewer.Resource
             stLoadedArchives.Add( ImageArchive.Load( filePath ) );
         }
 
+        public static bool FileExists( String name )
+        {
+            foreach ( ImageArchive arch in stLoadedArchives )
+                if ( arch.ContainsFile( name ) )
+                    return true;
+
+            return false;
+        }
+
+        public static FramedStream ReadFile( String name )
+        {
+            foreach ( ImageArchive arch in stLoadedArchives )
+                if ( arch.ContainsFile( name ) )
+                    return arch.ReadFile( name );
+
+            return null;
+        }
+
         public static Model LoadModel( String name, String txdName )
         {
             name = name.ToLower();
@@ -165,11 +183,6 @@ namespace GTAMapViewer.Resource
         {
             --stLoadedModels[ name ].Uses;
             UnloadTextureDictionary( txdName );
-        }
-
-        private static String GetTextureName( String name, String txdName, TextureType type )
-        {
-            return txdName + "_" + type.ToString()[ 0 ] + "_" + name;
         }
 
         public static TextureDictionary LoadTextureDictionary( String name )
