@@ -57,7 +57,7 @@ namespace GTAMapViewer.Graphics
             {
                 case TextureNativeSectionData.RasterFormat.R5G6B5:
                     if ( compression == TextureNativeSectionData.CompressionMode.DXT1 )
-                        return PixelInternalFormat.CompressedSrgbS3tcDxt1Ext;
+                        return PixelInternalFormat.CompressedRgbS3tcDxt1Ext;
                     goto default;
                 case TextureNativeSectionData.RasterFormat.A1R5G5B5:
                     if ( compression == TextureNativeSectionData.CompressionMode.DXT1 )
@@ -73,7 +73,7 @@ namespace GTAMapViewer.Graphics
                     goto default;
                 case TextureNativeSectionData.RasterFormat.R4G4B4A4:
                     if ( compression == TextureNativeSectionData.CompressionMode.DXT3 )
-                        return PixelInternalFormat.CompressedSrgbAlphaS3tcDxt3Ext;
+                        return PixelInternalFormat.CompressedRgbaS3tcDxt3Ext;
                     goto default;
                 default:
                     throw new UnhandledImageFormatException( compression, format );
