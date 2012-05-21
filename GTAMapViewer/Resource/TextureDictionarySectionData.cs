@@ -43,10 +43,11 @@ namespace GTAMapViewer.Resource
 
             foreach ( TextureNativeSectionData tex in data.Textures )
             {
+                Texture2D t2d = new Texture2D( tex );
                 if ( tex.DiffuseName.Length > 0 && !myDiffuseTextures.ContainsKey( tex.DiffuseName ) )
-                    myDiffuseTextures.Add( tex.DiffuseName, tex.Texture );
+                    myDiffuseTextures.Add( tex.DiffuseName, t2d );
                 if ( tex.AlphaName.Length > 0 && !myMaskTextures.ContainsKey( tex.AlphaName ) )
-                    myMaskTextures.Add( tex.AlphaName, tex.Texture );
+                    myMaskTextures.Add( tex.AlphaName, t2d );
             }
         }
 

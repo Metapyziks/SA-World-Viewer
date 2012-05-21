@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 
 using OpenTK.Graphics.OpenGL;
 
@@ -78,6 +79,16 @@ namespace GTAMapViewer.Graphics
                 Load();
                 myLoaded = true;
             }
+        }
+
+        protected void ErrorCheck( String loc = "unknown" )
+        {
+#if DEBUG
+            ErrorCode ec = GL.GetError();
+
+            if ( ec != ErrorCode.NoError )
+                Debug.WriteLine( ec.ToString() + " at " + loc );
+#endif
         }
     }
 }

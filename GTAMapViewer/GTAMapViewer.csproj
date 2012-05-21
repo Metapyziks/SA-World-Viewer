@@ -79,7 +79,6 @@
     <Compile Include="Graphics\ShaderBuilder.cs" />
     <Compile Include="Graphics\ShaderProgram.cs" />
     <Compile Include="Graphics\Texture.cs" />
-    <Compile Include="Graphics\Texture2DArray.cs" />
     <Compile Include="Graphics\VertexBuffer.cs" />
     <Compile Include="Resource\Model.cs" />
     <Compile Include="Program.cs" />

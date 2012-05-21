@@ -69,10 +69,7 @@ namespace GTAMapViewer.Resource
         public readonly byte MipMapCount;
         public readonly byte RasterType;
         public readonly UInt32 ImageDataSize;
-
-        public Texture2D Texture;
-
-        public bool Loaded { get { return Texture != null && Texture.Ready; } }
+        public readonly byte[] ImageData;
 
         public TextureNativeSectionData( SectionHeader header, FramedStream stream )
         {
@@ -118,8 +115,7 @@ namespace GTAMapViewer.Resource
                 Compression = (CompressionMode) reader.ReadByte();
 
             ImageDataSize = reader.ReadUInt32();
-
-            Load( stream );
+            ImageData = reader.ReadBytes( (int) ImageDataSize );
         }
 
         private static Color DecodeColor( UInt16 val, bool alpha )
@@ -139,150 +135,6 @@ namespace GTAMapViewer.Resource
                 int b = ( val & 0x1f ) << 3;
                 return Color.FromArgb( r, g, b );
             }
-        }
-
-        public void Load( FramedStream stream )
-        {
-            Bitmap bmp = new Bitmap( Width, Height, PixelFormat.Format32bppArgb );
-
-            switch ( (RasterFormat) ( (int) Format & 0xf000 ) )
-            {
-                case RasterFormat.Default:
-                    break;
-                case RasterFormat.ExtAutoMipMap:
-                    break;
-                case RasterFormat.ExtMipMap:
-                    break;
-                default:
-                    throw new UnhandledImageFormatException( Compression, Format );
-            }
-
-
-            byte[,] clrs = new byte[ 4, 4 ];
-            switch ( (RasterFormat) ( (int) Format & 0x0fff ) )
-            {
-                case RasterFormat.R5G6B5:
-                    if ( Compression != CompressionMode.DXT1 )
-                        throw new UnhandledImageFormatException( Compression, Format );
-
-                    for ( int y = 0; y < Height; y += 4 )
-                    {
-                        for ( int x = 0; x < Width; x += 4 )
-                        {
-                            Color clr0 = DecodeColor( BitConverter.ToUInt16( stream.ReadBytes( 2 ), 0 ), false );
-                            Color clr1 = DecodeColor( BitConverter.ToUInt16( stream.ReadBytes( 2 ), 0 ), false );
-
-                            clrs[ 0, 0 ] = clr0.R; clrs[ 0, 1 ] = clr0.G; clrs[ 0, 2 ] = clr0.B;
-                            clrs[ 1, 0 ] = clr1.R; clrs[ 1, 1 ] = clr1.G; clrs[ 1, 2 ] = clr1.B;
-
-                            for ( int i = 0; i < 3; ++i )
-                            {
-                                clrs[ 2, i ] = (byte) ( 2 * clrs[ 0, i ] / 3 + clrs[ 1, i ] / 3 );
-                                clrs[ 3, i ] = (byte) ( clrs[ 0, i ] / 3 + 2 * clrs[ 1, i ] / 3 );
-                            }
-
-                            UInt32 lookup = BitConverter.ToUInt32( stream.ReadBytes( 4 ), 0 );
-
-                            for ( int i = 0; i < 16; ++i )
-                            {
-                                byte clr = (byte) ( ( lookup >> ( i << 1 ) ) & 0x3 );
-                                bmp.SetPixel( x + ( i % 4 ), y + ( i / 4 ),
-                                    Color.FromArgb( clrs[ clr, 0 ], clrs[ clr, 1 ], clrs[ clr, 2 ] ) );
-                            }
-                        }
-                    }
-                    break;
-                case RasterFormat.A1R5G5B5:
-                    if ( Compression != CompressionMode.DXT1 )
-                        throw new UnhandledImageFormatException( Compression, Format );
-
-                    bool[] alphas = new bool[ 4 ];
-                    for ( int y = 0; y < Height; y += 4 )
-                    {
-                        for ( int x = 0; x < Width; x += 4 )
-                        {
-                            Color clr0 = DecodeColor( BitConverter.ToUInt16( stream.ReadBytes( 2 ), 0 ), true );
-                            Color clr1 = DecodeColor( BitConverter.ToUInt16( stream.ReadBytes( 2 ), 0 ), true );
-
-                            clrs[ 0, 0 ] = clr0.R; clrs[ 0, 1 ] = clr0.G; clrs[ 0, 2 ] = clr0.B; clrs[ 0, 3 ] = clr0.A;
-                            clrs[ 1, 0 ] = clr1.R; clrs[ 1, 1 ] = clr1.G; clrs[ 1, 2 ] = clr1.B; clrs[ 1, 3 ] = clr1.A;
-
-                            for ( int i = 0; i < 4; ++i )
-                            {
-                                clrs[ 2, i ] = (byte) ( 2 * clrs[ 0, i ] / 3 + clrs[ 1, i ] / 3 );
-                                clrs[ 3, i ] = (byte) ( clrs[ 0, i ] / 3 + 2 * clrs[ 1, i ] / 3 );
-                            }
-
-                            UInt32 lookup = BitConverter.ToUInt32( stream.ReadBytes( 4 ), 0 );
-
-                            for ( int i = 0; i < 16; ++i )
-                            {
-                                byte clr = (byte) ( ( lookup >> ( i << 1 ) ) & 0x3 );
-                                bmp.SetPixel( x + ( i % 4 ), y + ( i / 4 ),
-                                    Color.FromArgb( clrs[ clr, 3 ], clrs[ clr, 0 ], clrs[ clr, 1 ], clrs[ clr, 2 ] ) );
-                            }
-                        }
-                    }
-                    break;
-                case RasterFormat.B8G8R8:
-                case RasterFormat.B8G8R8A8:
-                    if ( Compression != CompressionMode.None )
-                        throw new UnhandledImageFormatException( Compression, Format );
-
-                    for ( int y = 0; y < Height; ++y )
-                    {
-                        for ( int x = 0; x < Width; ++x )
-                        {
-                            int b = stream.ReadByte();
-                            int g = stream.ReadByte();
-                            int r = stream.ReadByte();
-                            stream.ReadByte();
-                            bmp.SetPixel( x, y, Color.FromArgb( r, g, b ) );
-                        }
-                    }
-                    break;
-                case RasterFormat.R4G4B4A4:
-                    if ( Compression != CompressionMode.DXT3 )
-                        throw new UnhandledImageFormatException( Compression, Format );
-
-                    for ( int y = 0; y < Height; y += 4 )
-                    {
-                        for ( int x = 0; x < Width; x += 4 )
-                        {
-                            UInt64 alpha = BitConverter.ToUInt64( stream.ReadBytes( 8 ), 0 );
-
-                            Color clr0 = DecodeColor( BitConverter.ToUInt16( stream.ReadBytes( 2 ), 0 ), false );
-                            Color clr1 = DecodeColor( BitConverter.ToUInt16( stream.ReadBytes( 2 ), 0 ), false );
-
-                            clrs[ 0, 0 ] = clr0.R; clrs[ 0, 1 ] = clr0.G; clrs[ 0, 2 ] = clr0.B;
-                            clrs[ 1, 0 ] = clr1.R; clrs[ 1, 1 ] = clr1.G; clrs[ 1, 2 ] = clr1.B;
-
-                            for ( int i = 0; i < 3; ++i )
-                            {
-                                clrs[ 2, i ] = (byte) ( 2 * clrs[ 0, i ] / 3 + clrs[ 1, i ] / 3 );
-                                clrs[ 3, i ] = (byte) ( clrs[ 0, i ] / 3 + 2 * clrs[ 1, i ] / 3 );
-                            }
-
-                            UInt32 lookup = BitConverter.ToUInt32( stream.ReadBytes( 4 ), 0 );
-
-                            for ( int i = 0; i < 16; ++i )
-                            {
-                                byte clr = (byte) ( ( lookup >> ( i << 1 ) ) & 0x3 );
-                                byte alp = (byte) ( ( ( alpha >> ( i << 2 ) ) & 0xf ) << 4 );
-                                if ( alp >= 0x80 )
-                                    alp |= 0x0f;
-
-                                bmp.SetPixel( x + ( i % 4 ), y + ( i / 4 ),
-                                    Color.FromArgb( alp, clrs[ clr, 0 ], clrs[ clr, 1 ], clrs[ clr, 2 ] ) );
-                            }
-                        }
-                    }
-                    break;
-                default:
-                    throw new UnhandledImageFormatException( Compression, Format );
-            }
-
-            Texture = new Texture2D( bmp );
         }
     }
 }
