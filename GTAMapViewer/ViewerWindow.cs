@@ -13,6 +13,27 @@ namespace GTAMapViewer
     {
         public Scene CurrentScene { get; private set; }
 
+        public bool Fullscreen
+        {
+            get { return WindowState == OpenTK.WindowState.Fullscreen; }
+            set
+            {
+                if ( value != ( WindowState == OpenTK.WindowState.Fullscreen ) )
+                {
+                    if ( value )
+                    {
+                        WindowState = OpenTK.WindowState.Fullscreen;
+                        Size = new System.Drawing.Size( DisplayDevice.Default.Width, DisplayDevice.Default.Height );
+                    }
+                    else
+                    {
+                        WindowState = WindowState.Normal;
+                        Size = new System.Drawing.Size( 800, 600 );
+                    }
+                }
+            }
+        }
+
         public ViewerWindow()
             : base( 800, 600, new GraphicsMode( new ColorFormat( 8, 8, 8, 8 ), 16, 0 ), "GTA SA Model Viewer" )
         {

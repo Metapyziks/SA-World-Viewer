@@ -61,22 +61,13 @@ namespace GTAMapViewer.Scenes
         {
             switch ( e.KeyChar )
             {
-                case (char) 0x1B:
+                case (char) 0x1b:
                     myCaptureMouse = !myCaptureMouse;
                     CursorVisible = !myCaptureMouse;
                     break;
                 case 'f':
                 case 'F':
-                    if ( GameWindow.WindowState == WindowState.Fullscreen )
-                    {
-                        GameWindow.WindowState = WindowState.Normal;
-                        GameWindow.Size = new System.Drawing.Size( 800, 600 );
-                    }
-                    else
-                    {
-                        GameWindow.WindowState = WindowState.Fullscreen;
-                        GameWindow.Size = new System.Drawing.Size( DisplayDevice.Default.Width, DisplayDevice.Default.Height );
-                    }
+                    GameWindow.Fullscreen = !GameWindow.Fullscreen;
                     break;
             }
         }
