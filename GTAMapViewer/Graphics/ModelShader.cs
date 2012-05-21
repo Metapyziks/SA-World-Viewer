@@ -151,8 +151,13 @@ namespace GTAMapViewer.Graphics
             frag.Logic = @"
                 void main( void )
                 {
-                    if( ( flags & 4 ) != 0 && texture2D( tex_mask, var_texcoord ).r < 0.125 )
-                        discard;
+                    if( ( flags & 4 ) != 0 )
+                    {
+                        if( texture2D( tex_mask, var_texcoord ).r < 0.125 )
+                            discard;
+                        else
+                            out_frag_colour = vec4( texture2D( tex_diffuse, var_texcoord ).rgb * var_colour.rgb, 1.0 );
+                    }
                     else
                         out_frag_colour = texture2D( tex_diffuse, var_texcoord ) * var_colour;
                 }
@@ -212,7 +217,7 @@ namespace GTAMapViewer.Graphics
         private void UpdatePerspectiveMatrix()
         {
             PerspectiveMatrix = Matrix4.CreatePerspectiveFieldOfView( (float) Math.PI * ( 60.0f / 180.0f ),
-                (float) ScreenWidth / (float) ScreenHeight, 0.125f, 1024.0f );
+                (float) ScreenWidth / (float) ScreenHeight, 0.125f, 4096.0f );
             UpdateViewMatrix();
 
             myPerspectiveChanged = false;

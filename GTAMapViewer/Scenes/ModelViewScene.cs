@@ -46,6 +46,9 @@ namespace GTAMapViewer.Scenes
 
                 foreach ( Instance inst in myInstances )
                     inst.Object.Load();
+
+                double timeM = ResourceManager.ModelLoadTime;
+                double timeT = ResourceManager.TextureLoadTime;
             }
         }
 
@@ -98,7 +101,7 @@ namespace GTAMapViewer.Scenes
             {
                 movement.Normalize();
                 myShader.CameraPosition = myShader.CameraPosition + movement * CameraMoveSpeed * (float) e.Time
-                    * ( Keyboard[ Key.ShiftLeft ] ? 4.0f : 1.0f );
+                    * ( Keyboard[ Key.ShiftLeft ] ? 16.0f : 1.0f );
             }
         }
 

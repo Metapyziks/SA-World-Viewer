@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-
+using System.Diagnostics;
 using System.IO;
 
-using GTAMapViewer.Resource;
+using GTAMapViewer;
 using GTAMapViewer.Graphics;
 
-namespace GTAMapViewer
+namespace GTAMapViewer.Resource
 {
     internal enum TextureType : byte
     {
@@ -104,6 +104,18 @@ namespace GTAMapViewer
         private static Dictionary<String, Resource<TextureDictionary>> stLoadedTexDicts
             = new Dictionary<string, Resource<TextureDictionary>>();
 
+        private static Stopwatch stModelTimer = new Stopwatch();
+        private static Stopwatch stTexTimer = new Stopwatch();
+
+        public static double ModelLoadTime
+        {
+            get { return stModelTimer.Elapsed.TotalSeconds; }
+        }
+        public static double TextureLoadTime
+        {
+            get { return stTexTimer.Elapsed.TotalSeconds; }
+        }
+
         public static void LoadArchive( String filePath )
         {
             stLoadedArchives.Add( ImageArchive.Load( filePath ) );
@@ -124,7 +136,9 @@ namespace GTAMapViewer
                 {
                     if ( archive.ContainsFile( name ) )
                     {
+                        stModelTimer.Start();
                         res = new Resource<Model>( new Model( archive.ReadFile( name ) ) );
+                        stModelTimer.Stop();
                         break;
                     }
                 }
@@ -132,7 +146,9 @@ namespace GTAMapViewer
                 if ( res == null )
                     throw new KeyNotFoundException( "File with name \"" + name + "\" not present in a loaded archive." );
 
+                stTexTimer.Start();
                 TextureDictionary txd = LoadTextureDictionary( txdName );
+                stTexTimer.Stop();
                 res.Value.LoadTextures( txd );
 
                 stLoadedModels.Add( name, res );
