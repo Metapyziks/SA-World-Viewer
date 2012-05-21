@@ -56,6 +56,11 @@ namespace GTAMapViewer.Scenes
             FirstTime = true;
         }
 
+        public virtual void OnResize()
+        {
+
+        }
+
         public virtual void OnEnter( bool firstTime )
         {
 

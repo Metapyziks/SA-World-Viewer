@@ -34,6 +34,11 @@ namespace GTAMapViewer
             SetScene( new ModelViewScene( this ) );
         }
 
+        protected override void OnResize( EventArgs e )
+        {
+            CurrentScene.OnResize();
+        }
+
         public void SetScene( Scene newScene )
         {
             if ( CurrentScene != null )
