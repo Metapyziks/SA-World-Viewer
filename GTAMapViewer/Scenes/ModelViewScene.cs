@@ -59,6 +59,21 @@ namespace GTAMapViewer.Scenes
                     myCaptureMouse = !myCaptureMouse;
                     CursorVisible = !myCaptureMouse;
                     break;
+                case 'f':
+                case 'F':
+                    if ( GameWindow.WindowState == WindowState.Fullscreen )
+                    {
+                        GameWindow.WindowState = WindowState.Normal;
+                        GameWindow.Size = new System.Drawing.Size( 800, 600 );
+                        myShader.SetScreenSize( Width, Height );
+                    }
+                    else
+                    {
+                        GameWindow.WindowState = WindowState.Fullscreen;
+                        GameWindow.Size = new System.Drawing.Size( DisplayDevice.Default.Width, DisplayDevice.Default.Height );
+                        myShader.SetScreenSize( Width, Height );
+                    }
+                    break;
             }
         }
 

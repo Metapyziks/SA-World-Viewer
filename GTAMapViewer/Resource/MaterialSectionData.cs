@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
 
 using OpenTK.Graphics;
+
+using GTAMapViewer.Graphics;
 
 namespace GTAMapViewer.Resource
 {

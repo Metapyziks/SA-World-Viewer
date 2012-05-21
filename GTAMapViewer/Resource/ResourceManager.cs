@@ -1,19 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Diagnostics;
 using System.IO;
 
-using GTAMapViewer;
 using GTAMapViewer.Graphics;
 
 namespace GTAMapViewer.Resource
 {
     internal enum TextureType : byte
     {
-        Diffuse,
-        Mask
+        Diffuse = 1,
+        Mask = 2
     }
 
     internal static class ResourceManager
