@@ -58,7 +58,7 @@ namespace GTAMapViewer.Resource
                     if ( tex.Mask != null )
                     {
                         shader.SetTexture( "tex_mask", tex.Mask );
-                        shader.AlphaMask = true;
+                        //shader.AlphaMask = true;
                     }
                     else
                         shader.AlphaMask = false;

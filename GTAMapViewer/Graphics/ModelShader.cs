@@ -162,10 +162,12 @@ namespace GTAMapViewer.Graphics
                 {
                     if( var_colour.a == 0.0 )
                         discard;
-                    vec3 clr = texture2D( tex_diffuse, var_texcoord ).rgb;
-                    if( flag_mask && texture2D( tex_mask, var_texcoord ).a == 0.0 )
+                    vec4 clr = texture2D( tex_diffuse, var_texcoord );
+                    if( clr.a < 0.5 )
                         discard;
-                    out_frag_colour = vec4( clr * var_colour.rgb, var_colour.a );
+                    if( flag_mask && texture2D( tex_mask, var_texcoord ).a < 0.5 )
+                        discard;
+                    out_frag_colour = vec4( clr.rgb * var_colour.rgb, var_colour.a );
                 }
             ";
 

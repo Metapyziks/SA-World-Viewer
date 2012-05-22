@@ -199,7 +199,6 @@ namespace GTAMapViewer.Resource
                     if ( archive.ContainsFile( name ) )
                     {
                         res = new Resource<TextureDictionary>( new TextureDictionary( archive.ReadFile( name ) ) );
-                        break;
                     }
                 }
 
