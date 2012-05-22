@@ -19,8 +19,7 @@ namespace GTAMapViewer.World
         public float Radius { get; private set; }
         public float Radius2 { get; private set; }
 
-        public ExteriorBlock( int id, Vector2 centerPos )
-            : base( id )
+        public ExteriorBlock( Vector2 centerPos )
         {
             CenterPos = centerPos;
             Radius = Radius2 = 0;
@@ -67,8 +66,7 @@ namespace GTAMapViewer.World
 
         private ExteriorBlock[ , ] myInstGrid;
 
-        public Exterior( int id )
-            : base( id )
+        public Exterior()
         {
             myBounds = new Vector4();
         }
@@ -115,7 +113,7 @@ namespace GTAMapViewer.World
 
             myInstGrid = new ExteriorBlock[ myGridWidth, myGridDepth ];
             for ( int x = 0; x < myGridWidth; ++x ) for ( int z = 0; z < myGridDepth; ++z )
-                myInstGrid[ x, z ] = new ExteriorBlock( ID, GetBlockPos( x, z ) );
+                myInstGrid[ x, z ] = new ExteriorBlock( GetBlockPos( x, z ) );
 
             foreach ( InstPlacement placement in placements )
             {

@@ -29,7 +29,7 @@ namespace GTAMapViewer.World
         private static SortedDictionary<UInt32, ObjectDefinition> stObjects
             = new SortedDictionary<uint, ObjectDefinition>();
 
-        private static List<Cell> stCells;
+        private static Dictionary<UInt16,Cell> stCells;
 
         public static void LoadDefinitionFiles( String dirPath )
         {
@@ -124,8 +124,8 @@ namespace GTAMapViewer.World
 
         public static void LoadGameFile( String filePath )
         {
-            stCells = new List<Cell>();
-            stCells.Add( new Exterior( 0 ) );
+            stCells = new Dictionary<ushort, Cell>();
+            stCells.Add( 0, new Exterior() );
 
             using ( FileStream stream = new FileStream( filePath, FileMode.Open, FileAccess.Read ) )
             {
@@ -154,7 +154,7 @@ namespace GTAMapViewer.World
                 }
             }
 
-            foreach ( Cell cell in stCells )
+            foreach ( Cell cell in stCells.Values )
                 cell.FinalisePlacements();
         }
 
@@ -239,10 +239,17 @@ namespace GTAMapViewer.World
             for ( int i = 0; i < newPlacements.Count; ++i )
                 newPlacements[ i ].FindLODPlacement( newPlacements );
 
-            foreach ( InstPlacement p in newPlacements.Where( x => !x.IsLOD && x.Object != null &&
-                ( x.CellID == 0 || x.CellID == 13 || x.CellID > 18 ) ) )
+            foreach ( InstPlacement p in newPlacements.Where( x => !x.IsLOD && x.Object != null ) )
             {
-                stCells[ 0 ].AddPlacement( p );
+                if ( p.CellID == 0 || p.CellID == 13 || p.CellID > 18 )
+                    stCells[ 0 ].AddPlacement( p );
+                else
+                {
+                    if ( !stCells.ContainsKey( p.CellID ) )
+                        stCells.Add( p.CellID, new Interior() );
+
+                    stCells[ p.CellID ].AddPlacement( p );
+                }
             }
         }
 
@@ -254,7 +261,7 @@ namespace GTAMapViewer.World
             return null;
         }
 
-        public static Cell GetCell( int id )
+        public static Cell GetCell( UInt16 id )
         {
             return stCells[ id ];
         }

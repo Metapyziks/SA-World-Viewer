@@ -57,6 +57,7 @@
     <Compile Include="World\Exterior.cs" />
     <Compile Include="World\Instance.cs" />
     <Compile Include="World\InstPlacement.cs" />
+    <Compile Include="World\Interior.cs" />
     <Compile Include="World\ObjectDefinition.cs" />
     <Compile Include="World\ItemManager.cs" />
     <Compile Include="World\ObjectFlag.cs" />

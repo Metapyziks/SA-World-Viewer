@@ -11,7 +11,7 @@ namespace GTAMapViewer.World
         public readonly UInt32 ObjectID;
         public readonly ObjectDefinition Object;
         public readonly String Modelname;
-        public readonly Int32 CellID;
+        public readonly UInt16 CellID;
         public readonly Vector3 Position;
         public readonly Quaternion Rotation;
         public readonly Int32 LODIndex;
@@ -25,7 +25,7 @@ namespace GTAMapViewer.World
             ObjectID = uint.Parse( args[ 0 ] );
             Object = ItemManager.GetObject( ObjectID );
             Modelname = args[ 1 ];
-            CellID = int.Parse( args[ 2 ] );
+            CellID = (UInt16) int.Parse( args[ 2 ] );
             float posX = -float.Parse( args[ 3 ] );
             float posZ = float.Parse( args[ 4 ] );
             float posY = float.Parse( args[ 5 ] );
@@ -54,7 +54,7 @@ namespace GTAMapViewer.World
             Rotation = new Quaternion( rotX, rotY, rotZ, rotW );
             ObjectID = reader.ReadUInt32();
             Object = ItemManager.GetObject( ObjectID );
-            CellID = reader.ReadInt32();
+            CellID = (UInt16) reader.ReadInt32();
             LODIndex = reader.ReadInt32();
             IsLOD = false;
         }

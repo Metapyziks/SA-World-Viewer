@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 
-using OpenTK;
 using GTAMapViewer.Graphics;
 
 namespace GTAMapViewer.World
@@ -12,12 +8,8 @@ namespace GTAMapViewer.World
     {
         private List<InstPlacement> myTempPlacements;
 
-        public readonly int ID;
-
-        public Cell( int id )
+        public Cell()
         {
-            ID = id;
-
             myTempPlacements = new List<InstPlacement>();
         }
 

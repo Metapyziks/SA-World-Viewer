@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 
-using OpenTK;
 using OpenTK.Graphics.OpenGL;
 
 using GTAMapViewer.Graphics;

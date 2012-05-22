@@ -41,8 +41,8 @@ namespace GTAMapViewer.Scenes
             if ( firstTime )
             {
                 myShader = new ModelShader( Width, Height );
-                myShader.CameraPosition = new Vector3( -2063.132813f, 15.2734375f, -1731.78125f );
-                myCell = ItemManager.GetCell( 0 );
+                myShader.CameraPosition = new Vector3( -2569.469f, 1034.836f, -1297.258f );
+                myCell = ItemManager.GetCell( 2 );
             }
         }
 
