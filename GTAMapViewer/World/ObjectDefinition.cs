@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 
 using GTAMapViewer.Resource;
+using GTAMapViewer.Graphics;
 
 namespace GTAMapViewer.World
 {
@@ -22,6 +23,16 @@ namespace GTAMapViewer.World
         {
             get;
             private set;
+        }
+
+        public RenderLayer RenderLayer
+        {
+            get
+            {
+                return HasFlags( ObjectFlag.Alpha2 ) ?
+                    RenderLayer.Alpha2 : HasFlags( ObjectFlag.Alpha1 ) ?
+                    RenderLayer.Alpha1 : Graphics.RenderLayer.Base;
+            }
         }
 
         public readonly float DrawDist;

@@ -18,7 +18,7 @@ namespace GTAMapViewer.World
             myTempPlacements.Add( placement );
         }
 
-        public void AddPlacements( ICollection<InstPlacement> placements )
+        public void AddPlacements( IEnumerable<InstPlacement> placements )
         {
             myTempPlacements.AddRange( placements );
         }
@@ -29,8 +29,8 @@ namespace GTAMapViewer.World
             myTempPlacements = null;
         }
 
-        protected abstract void OnFinalisePlacements( ICollection<InstPlacement> placements );
-        public abstract ICollection<Instance> GetInstances();
-        public abstract void Render( ModelShader shader );
+        protected abstract void OnFinalisePlacements( IEnumerable<InstPlacement> placements );
+        public abstract IEnumerable<Instance> GetInstances();
+        public abstract void Render( ModelShader shader, RenderLayer layer );
     }
 }

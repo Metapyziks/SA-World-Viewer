@@ -136,7 +136,9 @@ namespace GTAMapViewer.Scenes
         public override void OnRenderFrame( OpenTK.FrameEventArgs e )
         {
             myShader.StartBatch();
-            myCell.Render( myShader );
+            myCell.Render( myShader, RenderLayer.Base );
+            myCell.Render( myShader, RenderLayer.Alpha1 );
+            myCell.Render( myShader, RenderLayer.Alpha2 );
             myShader.EndBatch();
         }
     }

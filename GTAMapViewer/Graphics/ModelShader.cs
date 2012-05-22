@@ -8,6 +8,13 @@ using GTAMapViewer.Resource;
 
 namespace GTAMapViewer.Graphics
 {
+    internal enum RenderLayer : byte
+    {
+        Base = 0,
+        Alpha1 = 1,
+        Alpha2 = 2
+    }
+
     internal class ModelShader : ShaderProgram
     {
         private Model myCurrentModel;
@@ -153,6 +160,7 @@ namespace GTAMapViewer.Graphics
             vert.AddAttribute( ShaderVarType.Vec4, "in_colour" );
             vert.AddVarying( ShaderVarType.Vec2, "var_texcoord" );
             vert.AddVarying( ShaderVarType.Vec4, "var_colour" );
+            vert.AddVarying( ShaderVarType.Float, "var_fogfactor" );
             vert.Logic = @"
                 vec3 qtransform( vec4 q, vec3 v )
                 { 
@@ -164,6 +172,12 @@ namespace GTAMapViewer.Graphics
                     gl_Position = view_matrix * vec4( qtransform( model_rot, in_position ) + model_pos, 1 );
                     var_texcoord = in_texcoord;
                     var_colour = colour * in_colour;
+
+                    const float LOG2 = 1.442695;
+                    const float DENS = 1.0 / 768.0;
+                    float dist = length( gl_Position );
+                    var_fogfactor = exp2( -DENS * DENS * dist * dist * LOG2 );
+                    var_fogfactor = clamp( var_fogfactor, 0.0, 1.0 );
                 }
             ";
 
@@ -171,19 +185,23 @@ namespace GTAMapViewer.Graphics
             frag.AddUniform( ShaderVarType.Sampler2D, "tex_diffuse" );
             frag.AddUniform( ShaderVarType.Sampler2D, "tex_mask" );
             frag.AddUniform( ShaderVarType.Bool, "flag_mask" );
+            // frag.AddUniform( ShaderVarType.Vec3, "fog_colour" );
             frag.AddVarying( ShaderVarType.Vec2, "var_texcoord" );
             frag.AddVarying( ShaderVarType.Vec4, "var_colour" );
+            frag.AddVarying( ShaderVarType.Float, "var_fogfactor" );
             frag.Logic = @"
+                const vec3 fog_colour = vec3( 100.0, 149.0, 237.0 ) / 255.0;
+
                 void main( void )
                 {
-                    if( var_colour.a == 0.0 )
+                    if( var_colour.a == 0.0 || var_fogfactor == 1.0 )
                         discard;
                     vec4 clr = texture2D( tex_diffuse, var_texcoord );
                     if( clr.a < 0.5 )
                         discard;
                     if( flag_mask && texture2D( tex_mask, var_texcoord ).a < 0.5 )
                         discard;
-                    out_frag_colour = vec4( clr.rgb * var_colour.rgb, var_colour.a );
+                    out_frag_colour = vec4( mix( fog_colour, clr.rgb * var_colour.rgb, var_fogfactor ), var_colour.a );
                 }
             ";
 
@@ -198,7 +216,7 @@ namespace GTAMapViewer.Graphics
             myColour = Color4.White;
             myAlphaMask = false;
 
-            myViewRange = 3072.0f;
+            myViewRange = 1536.0f;
             ViewRange2 = myViewRange * myViewRange;
 
             myPerspectiveChanged = true;

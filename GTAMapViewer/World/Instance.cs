@@ -53,8 +53,10 @@ namespace GTAMapViewer.World
 
         public void Render( ModelShader shader )
         {
-            if ( // ( Object.DrawDist >= 300.0f && !HasLOD ) ||
-                ( shader.CameraPosition - Position ).LengthSquared <= Object.DrawDist2 * 2 )
+            float dist2 = ( shader.CameraPosition - Position ).LengthSquared;
+
+            if ( ( Object.DrawDist >= 300.0f && !HasLOD && dist2 < shader.ViewRange2 ) ||
+                dist2 < Object.DrawDist2 )
             {
                 if ( !Object.Loaded )
                     Object.Load();

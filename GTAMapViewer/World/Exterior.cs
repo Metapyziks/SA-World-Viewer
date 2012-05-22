@@ -12,7 +12,7 @@ namespace GTAMapViewer.World
 {
     internal class ExteriorBlock : Cell
     {
-        private List<Instance> myInstances;
+        private List<Instance>[] myInstances;
 
         public readonly Vector2 CenterPos;
 
@@ -25,12 +25,15 @@ namespace GTAMapViewer.World
             Radius = Radius2 = 0;
         }
 
-        protected override void OnFinalisePlacements( ICollection<InstPlacement> placements )
+        protected override void OnFinalisePlacements( IEnumerable<InstPlacement> placements )
         {
-            myInstances = new List<Instance>();
+            myInstances = new List<Instance>[]
+            {
+                new List<Instance>(), new List<Instance>(), new List<Instance>()
+            };
             foreach ( InstPlacement p in placements )
             {
-                myInstances.Add( new Instance( p ) );
+                myInstances[ (int) p.Object.RenderLayer ].Add( new Instance( p ) );
                 Vector3 pos = p.Position;
                 Vector2 diff = new Vector2( pos.X, pos.Z ) - CenterPos;
                 float rad = diff.Length + p.Object.DrawDist;
@@ -40,14 +43,14 @@ namespace GTAMapViewer.World
             Radius2 = Radius * Radius;
         }
 
-        public override ICollection<Instance> GetInstances()
+        public override IEnumerable<Instance> GetInstances()
         {
-            return myInstances;
+            return myInstances[ 0 ].Union( myInstances[ 1 ] ).Union( myInstances[ 2 ] );
         }
 
-        public override void Render( ModelShader shader )
+        public override void Render( ModelShader shader, RenderLayer layer )
         {
-            foreach ( Instance inst in myInstances )
+            foreach ( Instance inst in myInstances[ (int) layer ] )
                 inst.Render( shader );
         }
     }
@@ -85,7 +88,7 @@ namespace GTAMapViewer.World
             return new Vector2( myBounds.X + x * BlockSize + HBlockSize, myBounds.Y + y * BlockSize + HBlockSize );
         }
 
-        protected override void OnFinalisePlacements( ICollection<InstPlacement> placements )
+        protected override void OnFinalisePlacements( IEnumerable<InstPlacement> placements )
         {
             Vector2 min = new Vector2();
             Vector2 max = new Vector2();
@@ -126,7 +129,7 @@ namespace GTAMapViewer.World
                 block.FinalisePlacements();
         }
 
-        public override ICollection<Instance> GetInstances()
+        public override IEnumerable<Instance> GetInstances()
         {
             List<Instance> instances = new List<Instance>();
 
@@ -136,7 +139,7 @@ namespace GTAMapViewer.World
             return instances;
         }
 
-        public override void Render( ModelShader shader )
+        public override void Render( ModelShader shader, RenderLayer layer )
         {
             float rx, rz;
             for ( int x = 0; x < myGridWidth; ++x ) for ( int z = 0; z < myGridDepth; ++z )
@@ -146,8 +149,8 @@ namespace GTAMapViewer.World
                 rx = blk.CenterPos.X - shader.CameraPosition.X;
                 rz = blk.CenterPos.Y - shader.CameraPosition.Z;
 
-                if( ( rx * rx + rz * rz ) < shader.ViewRange2 + blk.Radius2 )
-                    blk.Render( shader );
+                if ( ( rx * rx + rz * rz ) < shader.ViewRange2 + blk.Radius2 )
+                    blk.Render( shader, layer );
             }
         }
     }
