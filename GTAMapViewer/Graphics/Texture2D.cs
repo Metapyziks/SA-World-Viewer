@@ -1,4 +1,6 @@
-﻿using OpenTK.Graphics.OpenGL;
+﻿using System;
+
+using OpenTK.Graphics.OpenGL;
 
 using GTAMapViewer.Resource;
 
@@ -158,8 +160,8 @@ namespace GTAMapViewer.Graphics
         public readonly bool ContainsMipMaps;
         public readonly bool GenerateMipMaps;
 
-        public readonly byte[][] ImageLevelData;
-        public readonly int[] ImageLevelSizes;
+        public byte[][] ImageLevelData { get; private set; }
+        public int[] ImageLevelSizes { get; private set; }
 
         public Texture2D( TextureNativeSectionData tex )
             : base( TextureTarget.Texture2D )
@@ -236,6 +238,9 @@ namespace GTAMapViewer.Graphics
 
             GL.TexParameter( TextureTarget, TextureParameterName.TextureMinFilter, (int) MinFilter );
             GL.TexParameter( TextureTarget, TextureParameterName.TextureMagFilter, (int) TextureMagFilter.Linear );
+
+            ImageLevelData = null;
+            ImageLevelSizes = null;
         }
     }
 }

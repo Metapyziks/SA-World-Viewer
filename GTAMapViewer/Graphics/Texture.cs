@@ -5,7 +5,7 @@ using OpenTK.Graphics.OpenGL;
 
 namespace GTAMapViewer.Graphics
 {
-    internal class Texture
+    internal class Texture : IDisposable
     {
         protected static int GetNextPOTS( int wid, int hei )
         {
@@ -33,7 +33,7 @@ namespace GTAMapViewer.Graphics
         {
             get
             {
-                return myID > -1;
+                return myID > 0;
             }
         }
 
@@ -89,6 +89,15 @@ namespace GTAMapViewer.Graphics
             if ( ec != ErrorCode.NoError )
                 Debug.WriteLine( ec.ToString() + " at " + loc );
 #endif
+        }
+
+        public void Dispose()
+        {
+            if ( myLoaded )
+            {
+                GL.DeleteTexture( myID );
+                myID = 0;
+            }
         }
     }
 }

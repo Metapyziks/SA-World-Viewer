@@ -20,14 +20,6 @@ namespace GTAMapViewer.World
             private set;
         }
 
-        public Vector3 BoundSpherePos
-        {
-            get
-            {
-                return Position + Object.Model.Bounds.Offset;
-            }
-        }
-
         public Quaternion Rotation
         {
             get;
@@ -76,8 +68,14 @@ namespace GTAMapViewer.World
                     shader.Render( Object.Model );
                 }
             }
-            else if ( HasLOD )
-                LOD.Render( shader );
+            else
+            {
+                if ( Object.Loaded )
+                    Object.Unload();
+
+                if ( HasLOD )
+                    LOD.Render( shader );
+            }
         }
     }
 }

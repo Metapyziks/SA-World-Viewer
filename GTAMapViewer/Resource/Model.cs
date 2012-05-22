@@ -11,12 +11,15 @@ namespace GTAMapViewer.Resource
     {
         private GeometrySectionData[] myGeometry;
 
-        public readonly BoundingSphere Bounds;
+        public readonly String Name;
 
+        public TextureDictionary TextureDict { get; private set; }
         public VertexBuffer VertexBuffer { get; private set; }
 
-        public Model( FramedStream stream )
+        public Model( String name, FramedStream stream )
         {
+            Name = name;
+
             List<GeometrySectionData> geos = new List<GeometrySectionData>();
             while ( stream.CanRead )
             {
@@ -35,15 +38,22 @@ namespace GTAMapViewer.Resource
             if ( myGeometry.Length > 0 )
             {
                 GeometrySectionData geo = myGeometry[ 0 ];
-                Bounds = geo.BoundingSphere;
                 VertexBuffer.SetData( geo.GetVertices(), geo.GetIndices() );
             }
         }
 
-        public void LoadTextures( TextureDictionary txd )
+        public void LoadTextures( String txdName )
         {
+            TextureDict = ResourceManager.LoadTextureDictionary( txdName );
+
             foreach ( GeometrySectionData geo in myGeometry )
-                geo.LoadTextures( txd );
+                geo.LoadTextures( TextureDict );
+        }
+
+        public void UnloadTextures()
+        {
+            ResourceManager.UnloadTextureDictionary( TextureDict.Name );
+            TextureDict = null;
         }
 
         public void Render( ModelShader shader )
@@ -75,6 +85,7 @@ namespace GTAMapViewer.Resource
 
         public void Dispose()
         {
+            ResourceManager.UnloadTextureDictionary( TextureDict.Name );
             VertexBuffer.Dispose();
         }
     }

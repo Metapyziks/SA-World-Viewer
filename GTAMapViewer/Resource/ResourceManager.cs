@@ -16,18 +16,45 @@ namespace GTAMapViewer.Resource
 
     internal static class ResourceManager
     {
+        private const double ResourceDisposeDelay = 10.0;
+
         private class Resource<T>
         {
+            private int myUses;
+            private DateTime myLastUsedTime;
+
             public readonly T Value;
-            public int Uses;
+            public int Uses
+            {
+                get { return myUses; }
+                set
+                {
+                    if ( myUses != value )
+                    {
+                        myUses = value;
+                        if ( value == 0 )
+                            myLastUsedTime = DateTime.Now;
+                    }
+                }
+            }
+
+            public bool Used { get { return Uses > 0; } }
+            public DateTime LastUsedTime
+            {
+                get
+                {
+                    if ( Used )
+                        return DateTime.Now;
+
+                    return myLastUsedTime;
+                }
+            }
 
             public Resource( T resource )
             {
                 Value = resource;
                 Uses = 0;
             }
-
-            public bool Used { get { return Uses > 0; } }
         }
 
         private class ImageArchive
@@ -99,8 +126,12 @@ namespace GTAMapViewer.Resource
 
         private static Dictionary<String, Resource<Model>> stLoadedModels
             = new Dictionary<string, Resource<Model>>();
+        private static LinkedList<Resource<Model>> stUnusedModels
+            = new LinkedList<Resource<Model>>();
         private static Dictionary<String, Resource<TextureDictionary>> stLoadedTexDicts
             = new Dictionary<string, Resource<TextureDictionary>>();
+        private static LinkedList<Resource<TextureDictionary>> stUnusedTexDicts
+            = new LinkedList<Resource<TextureDictionary>>();
 
         private static Stopwatch stModelTimer = new Stopwatch();
         private static Stopwatch stTexTimer = new Stopwatch();
@@ -137,12 +168,47 @@ namespace GTAMapViewer.Resource
             return null;
         }
 
+        public static void CheckUnusedResources()
+        {
+            DateTime now = DateTime.Now;
+            Resource<Model> modelRes;
+            while ( stUnusedModels.Count > 0 &&
+                ( now - ( modelRes = stUnusedModels.First.Value ).LastUsedTime ).Seconds > ResourceDisposeDelay )
+            {
+                modelRes.Value.Dispose();
+                stLoadedModels.Remove( modelRes.Value.Name );
+                stUnusedModels.RemoveFirst();
+            }
+
+            Resource<TextureDictionary> txdRes;
+            while ( stUnusedTexDicts.Count > 0 &&
+                ( now - ( txdRes = stUnusedTexDicts.First.Value ).LastUsedTime ).Seconds > ResourceDisposeDelay )
+            {
+                txdRes.Value.Dispose();
+                stLoadedTexDicts.Remove( txdRes.Value.Name );
+                stUnusedTexDicts.RemoveFirst();
+            }
+        }
+
+        public static void UnloadAll()
+        {
+            foreach ( Resource<Model> model in stLoadedModels.Values )
+                model.Value.Dispose();
+
+            foreach ( Resource<TextureDictionary> txd in stLoadedTexDicts.Values )
+                txd.Value.Dispose();
+
+            stLoadedModels.Clear();
+            stLoadedTexDicts.Clear();
+
+            stUnusedModels.Clear();
+            stUnusedTexDicts.Clear();
+        }
+
         public static Model LoadModel( String name, String txdName )
         {
             name = name.ToLower();
-
-            if ( !name.EndsWith( ".dff" ) )
-                name += ".dff";
+            String fileName = name + ".dff";
 
             Resource<Model> res = null;
 
@@ -150,27 +216,28 @@ namespace GTAMapViewer.Resource
             {
                 foreach ( ImageArchive archive in stLoadedArchives )
                 {
-                    if ( archive.ContainsFile( name ) )
+                    if ( archive.ContainsFile( fileName ) )
                     {
                         stModelTimer.Start();
-                        res = new Resource<Model>( new Model( archive.ReadFile( name ) ) );
+                        res = new Resource<Model>( new Model( name, archive.ReadFile( fileName ) ) );
                         stModelTimer.Stop();
                         break;
                     }
                 }
 
                 if ( res == null )
-                    throw new KeyNotFoundException( "File with name \"" + name + "\" not present in a loaded archive." );
+                    throw new KeyNotFoundException( "File with name \"" + fileName + "\" not present in a loaded archive." );
 
-                stTexTimer.Start();
-                TextureDictionary txd = LoadTextureDictionary( txdName );
-                stTexTimer.Stop();
-                res.Value.LoadTextures( txd );
-
+                res.Value.LoadTextures( txdName );
                 stLoadedModels.Add( name, res );
             }
             else
+            {
                 res = stLoadedModels[ name ];
+
+                if ( !res.Used )
+                    stUnusedModels.Remove( res );
+            }
 
             ++res.Uses;
 
@@ -179,16 +246,21 @@ namespace GTAMapViewer.Resource
 
         public static void UnloadModel( String name, String txdName )
         {
-            --stLoadedModels[ name ].Uses;
-            UnloadTextureDictionary( txdName );
+            name = name.ToLower();
+            Resource<Model> res = stLoadedModels[ name ];
+            --res.Uses;
+
+            if( res.Uses < 0 )
+                throw new Exception( "You done messes up" );
+
+            if ( !res.Used )
+                stUnusedModels.AddLast( res );
         }
 
         public static TextureDictionary LoadTextureDictionary( String name )
         {
             name = name.ToLower();
-
-            if ( !name.EndsWith( ".txd" ) )
-                name += ".txd";
+            String fileName = name + ".txd";
 
             Resource<TextureDictionary> res = null;
 
@@ -196,19 +268,27 @@ namespace GTAMapViewer.Resource
             {
                 foreach ( ImageArchive archive in stLoadedArchives )
                 {
-                    if ( archive.ContainsFile( name ) )
+                    if ( archive.ContainsFile( fileName ) )
                     {
-                        res = new Resource<TextureDictionary>( new TextureDictionary( archive.ReadFile( name ) ) );
+                        stTexTimer.Start();
+                        res = new Resource<TextureDictionary>( new TextureDictionary( name, archive.ReadFile( fileName ) ) );
+                        stTexTimer.Stop();
+                        break;
                     }
                 }
 
                 if ( res == null )
-                    throw new KeyNotFoundException( "File with name \"" + name + "\" not present in a loaded archive." );
+                    throw new KeyNotFoundException( "File with name \"" + fileName + "\" not present in a loaded archive." );
 
                 stLoadedTexDicts.Add( name, res );
             }
             else
+            {
                 res = stLoadedTexDicts[ name ];
+
+                if ( !res.Used )
+                    stUnusedTexDicts.Remove( res );
+            }
 
             ++res.Uses;
 
@@ -217,7 +297,15 @@ namespace GTAMapViewer.Resource
 
         public static void UnloadTextureDictionary( String name )
         {
-            --stLoadedTexDicts[ name ].Uses;
+            name = name.ToLower();
+            Resource<TextureDictionary> res = stLoadedTexDicts[ name ];
+            --res.Uses;
+
+            if ( res.Uses < 0 )
+                throw new Exception( "You done messes up" );
+
+            if ( !res.Used )
+                stUnusedTexDicts.AddLast( res );
         }
     }
 }

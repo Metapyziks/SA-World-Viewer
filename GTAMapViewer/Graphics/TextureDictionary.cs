@@ -5,13 +5,17 @@ using GTAMapViewer.Resource;
 
 namespace GTAMapViewer.Graphics
 {
-    internal class TextureDictionary
+    internal class TextureDictionary : IDisposable
     {
         private Dictionary<String, Texture2D> myDiffuseTextures;
         private Dictionary<String, Texture2D> myMaskTextures;
 
-        public TextureDictionary( FramedStream stream )
+        public readonly String Name;
+
+        public TextureDictionary( String name, FramedStream stream )
         {
+            Name = name;
+
             Section sec = new Section( stream );
             TextureDictionarySectionData data = sec.Data as TextureDictionarySectionData;
 
@@ -45,6 +49,15 @@ namespace GTAMapViewer.Graphics
                 else
                     return myMaskTextures[ name ];
             }
+        }
+
+        public void Dispose()
+        {
+            foreach ( Texture2D tex in myDiffuseTextures.Values )
+                tex.Dispose();
+
+            foreach ( Texture2D tex in myMaskTextures.Values )
+                tex.Dispose();
         }
     }
 }

@@ -41,8 +41,7 @@ namespace GTAMapViewer.Scenes
             if ( firstTime )
             {
                 myShader = new ModelShader( Width, Height );
-                myShader.CameraPosition = new Vector3( -2569.469f, 1034.836f, -1297.258f );
-                myCell = ItemManager.GetCell( 2 );
+                myCell = ItemManager.GetCell( 0 );
             }
         }
 
@@ -107,6 +106,8 @@ namespace GTAMapViewer.Scenes
                 myShader.CameraPosition = myShader.CameraPosition + movement * CameraMoveSpeed * (float) e.Time
                     * ( Keyboard[ Key.ShiftLeft ] ? 4.0f : 1.0f );
             }
+
+            ResourceManager.CheckUnusedResources();
         }
 
         public override void OnMouseMove( MouseMoveEventArgs e )
