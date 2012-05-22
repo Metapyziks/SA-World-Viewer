@@ -5,6 +5,7 @@ using System.Text;
 
 using OpenTK;
 using OpenTK.Input;
+using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 
 using GTAMapViewer.Graphics;
@@ -34,13 +35,14 @@ namespace GTAMapViewer.Scenes
         {
             base.OnEnter( firstTime );
 
-            GL.ClearColor( OpenTK.Graphics.Color4.CornflowerBlue );
+            GL.ClearColor( Color4.CornflowerBlue );
 
             CursorVisible = !myCaptureMouse;
 
             if ( firstTime )
             {
                 myShader = new ModelShader( Width, Height );
+                myShader.FogColour = Color4.CornflowerBlue;
                 myCell = ItemManager.GetCell( 0 );
             }
         }

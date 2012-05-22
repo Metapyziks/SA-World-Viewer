@@ -31,6 +31,10 @@ namespace GTAMapViewer.Graphics
         private Color4 myColour;
         private int myColourLoc;
 
+        private Color4 myFogColour;
+        private int myFogColourLoc;
+        private int myFogDensityLoc;
+
         private bool myAlphaMask;
         private int myAlphaMaskLoc;
 
@@ -119,6 +123,15 @@ namespace GTAMapViewer.Graphics
                 GL.Uniform4( myColourLoc, value );
             }
         }
+        public Color4 FogColour
+        {
+            get { return myFogColour; }
+            set
+            {
+                myFogColour = value;
+                GL.Uniform3( myFogColourLoc, value.R, value.G, value.B );
+            }
+        }
         public bool AlphaMask
         {
             get { return myAlphaMask; }
@@ -155,6 +168,7 @@ namespace GTAMapViewer.Graphics
             vert.AddUniform( ShaderVarType.Vec3, "model_pos" );
             vert.AddUniform( ShaderVarType.Vec4, "model_rot" );
             vert.AddUniform( ShaderVarType.Vec4, "colour" );
+            vert.AddUniform( ShaderVarType.Float, "fog_density" );
             vert.AddAttribute( ShaderVarType.Vec3, "in_position" );
             vert.AddAttribute( ShaderVarType.Vec2, "in_texcoord" );
             vert.AddAttribute( ShaderVarType.Vec4, "in_colour" );
@@ -174,9 +188,8 @@ namespace GTAMapViewer.Graphics
                     var_colour = colour * in_colour;
 
                     const float LOG2 = 1.442695;
-                    const float DENS = 1.0 / 768.0;
                     float dist = length( gl_Position );
-                    var_fogfactor = exp2( -DENS * DENS * dist * dist * LOG2 );
+                    var_fogfactor = exp2( - fog_density * fog_density * dist * dist * LOG2 );
                     var_fogfactor = clamp( var_fogfactor, 0.0, 1.0 );
                 }
             ";
@@ -185,13 +198,11 @@ namespace GTAMapViewer.Graphics
             frag.AddUniform( ShaderVarType.Sampler2D, "tex_diffuse" );
             frag.AddUniform( ShaderVarType.Sampler2D, "tex_mask" );
             frag.AddUniform( ShaderVarType.Bool, "flag_mask" );
-            // frag.AddUniform( ShaderVarType.Vec3, "fog_colour" );
+            frag.AddUniform( ShaderVarType.Vec3, "fog_colour" );
             frag.AddVarying( ShaderVarType.Vec2, "var_texcoord" );
             frag.AddVarying( ShaderVarType.Vec4, "var_colour" );
             frag.AddVarying( ShaderVarType.Float, "var_fogfactor" );
             frag.Logic = @"
-                const vec3 fog_colour = vec3( 100.0, 149.0, 237.0 ) / 255.0;
-
                 void main( void )
                 {
                     if( var_colour.a == 0.0 || var_fogfactor == 1.0 )
@@ -254,6 +265,8 @@ namespace GTAMapViewer.Graphics
             myModelPosLoc = GL.GetUniformLocation( Program, "model_pos" );
             myModelRotLoc = GL.GetUniformLocation( Program, "model_rot" );
             myColourLoc = GL.GetUniformLocation( Program, "colour" );
+            myFogColourLoc = GL.GetUniformLocation( Program, "fog_colour" );
+            myFogDensityLoc = GL.GetUniformLocation( Program, "fog_density" );
             myAlphaMaskLoc = GL.GetUniformLocation( Program, "flag_mask" );
 
             ModelPos = new Vector3();
@@ -266,6 +279,8 @@ namespace GTAMapViewer.Graphics
             PerspectiveMatrix = Matrix4.CreatePerspectiveFieldOfView( (float) Math.PI * ( 60.0f / 180.0f ),
                 (float) ScreenWidth / (float) ScreenHeight, 0.125f, myViewRange );
             UpdateViewMatrix();
+
+            GL.Uniform1( myFogDensityLoc, 2.0f / ViewRange );
 
             myPerspectiveChanged = false;
         }
