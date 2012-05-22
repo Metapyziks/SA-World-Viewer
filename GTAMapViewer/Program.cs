@@ -2,7 +2,7 @@
 using System.IO;
 
 using GTAMapViewer.Resource;
-using GTAMapViewer.Items;
+using GTAMapViewer.World;
 
 namespace GTAMapViewer
 {

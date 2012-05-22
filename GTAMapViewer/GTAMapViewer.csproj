@@ -53,10 +53,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Graphics\TextureDictionary.cs" />
-    <Compile Include="Items\Instance.cs" />
-    <Compile Include="Items\ObjectDefinition.cs" />
-    <Compile Include="Items\ItemManager.cs" />
-    <Compile Include="Items\ObjectFlag.cs" />
+    <Compile Include="World\Cell.cs" />
+    <Compile Include="World\Exterior.cs" />
+    <Compile Include="World\Instance.cs" />
+    <Compile Include="World\InstPlacement.cs" />
+    <Compile Include="World\ObjectDefinition.cs" />
+    <Compile Include="World\ItemManager.cs" />
+    <Compile Include="World\ObjectFlag.cs" />
     <Compile Include="Resource\ResourceManager.cs" />
     <Compile Include="Resource\ClumpSectionData.cs" />
     <Compile Include="Resource\DataSectionData.cs" />

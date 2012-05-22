@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace GTAMapViewer.Items
+namespace GTAMapViewer.World
 {
     internal enum ObjectFlag : uint
     {

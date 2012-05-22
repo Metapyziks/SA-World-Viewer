@@ -5,7 +5,7 @@ using System.Text;
 
 using GTAMapViewer.Resource;
 
-namespace GTAMapViewer.Items
+namespace GTAMapViewer.World
 {
     internal class ObjectDefinition
     {

@@ -4,7 +4,7 @@ using OpenTK;
 
 using GTAMapViewer.Graphics;
 
-namespace GTAMapViewer.Items
+namespace GTAMapViewer.World
 {
     internal class Instance
     {
@@ -18,6 +18,14 @@ namespace GTAMapViewer.Items
         {
             get;
             private set;
+        }
+
+        public Vector3 BoundSpherePos
+        {
+            get
+            {
+                return Position + Object.Model.Bounds.Offset;
+            }
         }
 
         public Quaternion Rotation
@@ -41,37 +49,20 @@ namespace GTAMapViewer.Items
             private set;
         }
 
-        public Instance( UInt32 objID )
+        public Instance( InstPlacement placement )
         {
-            Object = ItemManager.GetObject( objID );
+            Object = placement.Object;
 
-            Position = new Vector3();
-            Rotation = new Quaternion();
-            LOD = null;
-            IsLOD = false;
-        }
-
-        public void Place( Vector3 pos, Quaternion rot, Instance lod = null )
-        {
-            Position = pos;
-            Rotation = rot;
-            LOD = lod;
-
-            if ( HasLOD )
-                LOD.IsLOD = true;
-        }
-
-        public void Load()
-        {
-            if ( HasLOD )
-                LOD.Load();
-
-            Object.Load();
+            Position = placement.Position;
+            Rotation = placement.Rotation;
+            LOD = ( placement.HasLOD ? new Instance( placement.LODPlacement ) : null );
+            IsLOD = placement.IsLOD;
         }
 
         public void Render( ModelShader shader )
         {
-            if ( ( shader.CameraPosition - Position ).LengthSquared <= Object.DrawDist2 * 2 )
+            if ( // ( Object.DrawDist >= 300.0f && !HasLOD ) ||
+                ( shader.CameraPosition - Position ).LengthSquared <= Object.DrawDist2 * 2 )
             {
                 if ( !Object.Loaded )
                     Object.Load();

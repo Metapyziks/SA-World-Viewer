@@ -9,7 +9,7 @@ using OpenTK.Graphics.OpenGL;
 
 using GTAMapViewer.Graphics;
 using GTAMapViewer.Resource;
-using GTAMapViewer.Items;
+using GTAMapViewer.World;
 
 namespace GTAMapViewer.Scenes
 {
@@ -18,7 +18,7 @@ namespace GTAMapViewer.Scenes
         private const float CameraMoveSpeed = 16.0f;
 
         private ModelShader myShader;
-        private Instance[] myInstances;
+        private Cell myCell;
 
         private bool myIgnoreMouse;
         private bool myCaptureMouse;
@@ -42,7 +42,7 @@ namespace GTAMapViewer.Scenes
             {
                 myShader = new ModelShader( Width, Height );
                 myShader.CameraPosition = new Vector3( -2063.132813f, 15.2734375f, -1731.78125f );
-                myInstances = ItemManager.GetInstances().ToArray();
+                myCell = ItemManager.GetCell( 0 );
             }
         }
 
@@ -135,10 +135,7 @@ namespace GTAMapViewer.Scenes
         public override void OnRenderFrame( OpenTK.FrameEventArgs e )
         {
             myShader.StartBatch();
-            foreach ( Instance inst in myInstances )
-            {
-                inst.Render( myShader );
-            }
+            myCell.Render( myShader );
             myShader.EndBatch();
         }
     }

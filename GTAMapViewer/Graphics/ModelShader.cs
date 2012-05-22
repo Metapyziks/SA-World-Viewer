@@ -30,6 +30,7 @@ namespace GTAMapViewer.Graphics
         private Vector3 myCameraPosition;
         private Vector2 myCameraRotation;
         private Matrix4 myPerspectiveMatrix;
+        private float myViewRange;
 
         private bool myPerspectiveChanged;
         private bool myViewChanged;
@@ -68,6 +69,21 @@ namespace GTAMapViewer.Graphics
                 myPerspectiveMatrix = value;
                 myPerspectiveChanged = true;
             }
+        }
+        public float ViewRange
+        {
+            get { return myViewRange; }
+            set
+            {
+                myViewRange = value;
+                ViewRange2 = value * value;
+                myPerspectiveChanged = true;
+            }
+        }
+        public float ViewRange2
+        {
+            get;
+            private set;
         }
         public Vector3 ModelPos
         {
@@ -182,6 +198,9 @@ namespace GTAMapViewer.Graphics
             myColour = Color4.White;
             myAlphaMask = false;
 
+            myViewRange = 3072.0f;
+            ViewRange2 = myViewRange * myViewRange;
+
             myPerspectiveChanged = true;
             myViewChanged = true;
 
@@ -227,7 +246,7 @@ namespace GTAMapViewer.Graphics
         private void UpdatePerspectiveMatrix()
         {
             PerspectiveMatrix = Matrix4.CreatePerspectiveFieldOfView( (float) Math.PI * ( 60.0f / 180.0f ),
-                (float) ScreenWidth / (float) ScreenHeight, 0.125f, 4096.0f );
+                (float) ScreenWidth / (float) ScreenHeight, 0.125f, myViewRange );
             UpdateViewMatrix();
 
             myPerspectiveChanged = false;

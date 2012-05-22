@@ -19,9 +19,9 @@ namespace GTAMapViewer.Graphics
                     bool black = ( ( x / 4 ) % 2 == ( y / 4 ) % 2 );
                     byte clr = (byte) ( black ? 0 : 0xff );
                     data[ i++ ] = clr;
+                    data[ i++ ] = 0x00;
                     data[ i++ ] = clr;
-                    data[ i++ ] = clr;
-                    data[ i++ ] = clr;
+                    data[ i++ ] = 0xff;
                 }
             }
             Missing = new Texture2D( 16, 16, data );

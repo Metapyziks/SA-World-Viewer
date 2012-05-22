@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 
+using OpenTK;
 using OpenTK.Graphics.OpenGL;
 
 using GTAMapViewer.Graphics;
@@ -11,6 +12,8 @@ namespace GTAMapViewer.Resource
     internal class Model : IDisposable
     {
         private GeometrySectionData[] myGeometry;
+
+        public readonly BoundingSphere Bounds;
 
         public VertexBuffer VertexBuffer { get; private set; }
 
@@ -23,8 +26,10 @@ namespace GTAMapViewer.Resource
                 if ( header.Type == SectionType.Clump )
                 {
                     ClumpSectionData data = SectionData.FromStream<ClumpSectionData>( header, stream );
-                    geos.AddRange( data.GeometryList.Geometry );
+                    if( data.GeometryList != null )
+                        geos.AddRange( data.GeometryList.Geometry );
                 }
+                break;
             }
             myGeometry = geos.ToArray();
 
@@ -32,6 +37,7 @@ namespace GTAMapViewer.Resource
             if ( myGeometry.Length > 0 )
             {
                 GeometrySectionData geo = myGeometry[ 0 ];
+                Bounds = geo.BoundingSphere;
                 VertexBuffer.SetData( geo.GetVertices(), geo.GetIndices() );
             }
         }

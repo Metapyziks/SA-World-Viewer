@@ -55,14 +55,7 @@ namespace GTAMapViewer.Resource
                 ConstructorInfo cons = t.GetConstructor( new Type[] { typeof( SectionHeader ), typeof( FramedStream ) } );
                 if ( cons != null )
                 {
-                    try
-                    {
-                        data = (T) cons.Invoke( new object[] { header, stream } );
-                    }
-                    catch ( TargetInvocationException e )
-                    {
-                        throw e.InnerException;
-                    }
+                    data = (T) cons.Invoke( new object[] { header, stream } );
                 }
             }
             return data;

@@ -14,7 +14,11 @@ namespace GTAMapViewer.Resource
 
         public ClumpSectionData( SectionHeader header, FramedStream stream )
         {
-            ObjectCount = BitConverter.ToUInt32( ( (DataSectionData) new Section( stream ).Data ).Value, 0 );
+            DataSectionData dat = (DataSectionData) new Section( stream ).Data;
+            if ( dat == null )
+                return;
+
+            ObjectCount = BitConverter.ToUInt32( dat.Value, 0 );
             var frameList = new Section( stream );
             GeometryList = (GeometryListSectionData) new Section( stream ).Data;
         }
