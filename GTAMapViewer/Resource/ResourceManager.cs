@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 
 using GTAMapViewer.Graphics;
+using GTAMapViewer.World;
 
 namespace GTAMapViewer.Resource
 {
@@ -17,6 +19,25 @@ namespace GTAMapViewer.Resource
     internal static class ResourceManager
     {
         private const double ResourceDisposeDelay = 10.0;
+
+        private enum JobType : byte
+        {
+            Load        = 0, Unload        = 1,
+            LoadModel   = 2, UnloadModel   = 3,
+            LoadTexDict = 4, UnloadTexDict = 5
+        }
+
+        private class Job
+        {
+            public readonly JobType Type;
+            public readonly Object[] Args;
+
+            public Job( JobType type, params Object[] args )
+            {
+                Type = type;
+                Args = args;
+            }
+        }
 
         private class Resource<T>
         {
@@ -136,6 +157,13 @@ namespace GTAMapViewer.Resource
         private static Stopwatch stModelTimer = new Stopwatch();
         private static Stopwatch stTexTimer = new Stopwatch();
 
+        private static Thread stManagerThread;
+        private static Queue<Job> stThreadJobs;
+        private static bool stStopThread;
+
+        private static Queue<VertexBuffer> stVBDisposals = new Queue<VertexBuffer>();
+        private static Queue<TextureDictionary> stTDDisposals = new Queue<TextureDictionary>();
+
         public static double ModelLoadTime
         {
             get { return stModelTimer.Elapsed.TotalSeconds; }
@@ -148,6 +176,55 @@ namespace GTAMapViewer.Resource
         public static void LoadArchive( String filePath )
         {
             stLoadedArchives.Add( ImageArchive.Load( filePath ) );
+        }
+
+        public static void StartThread()
+        {
+            if ( stManagerThread != null && stManagerThread.IsAlive )
+                return;
+
+            stStopThread = false;
+            stThreadJobs = new Queue<Job>();
+            stManagerThread = new Thread( ThreadEntry );
+            stManagerThread.Start();
+        }
+
+        public static void StopThread()
+        {
+            stStopThread = true;
+            stManagerThread = null;
+        }
+
+        private static void ThreadEntry()
+        {
+            while ( !stStopThread )
+            {
+                Job job = null;
+                lock ( stThreadJobs )
+                    if ( stThreadJobs.Count > 0 )
+                        job = stThreadJobs.Dequeue();
+
+                if ( job != null )
+                {
+                    ObjectDefinition targ;
+                    switch ( job.Type )
+                    {
+                        case JobType.LoadModel:
+                            targ = job.Args[ 0 ] as ObjectDefinition;
+                            targ.Model = LoadModel( targ.ModelName.ToLower(), targ.TextureDictName );
+                            break;
+                        case JobType.UnloadModel:
+                            targ = job.Args[ 0 ] as ObjectDefinition;
+                            UnloadModel( targ.ModelName.ToLower() );
+                            break;
+                    }
+                }
+                else
+                {
+                    CheckUnusedResources();
+                    Thread.Sleep( 33 );
+                }
+            }
         }
 
         public static bool FileExists( String name )
@@ -168,26 +245,67 @@ namespace GTAMapViewer.Resource
             return null;
         }
 
-        public static void CheckUnusedResources()
+        private static void CheckUnusedResources()
         {
             DateTime now = DateTime.Now;
-            Resource<Model> modelRes;
-            while ( stUnusedModels.Count > 0 &&
-                ( now - ( modelRes = stUnusedModels.First.Value ).LastUsedTime ).Seconds > ResourceDisposeDelay )
+            while ( stUnusedModels.Count > 0 )
             {
-                modelRes.Value.Dispose();
-                stLoadedModels.Remove( modelRes.Value.Name );
+                Resource<Model> res = stUnusedModels.First.Value;
+                if ( res.Used )
+                {
+                    stUnusedModels.RemoveFirst();
+                    continue;
+                }
+
+                if ( ( now - res.LastUsedTime ).Seconds < ResourceDisposeDelay )
+                    break;
+
+                res.Value.Dispose();
+
+                stLoadedModels.Remove( res.Value.Name );
                 stUnusedModels.RemoveFirst();
             }
 
-            Resource<TextureDictionary> txdRes;
-            while ( stUnusedTexDicts.Count > 0 &&
-                ( now - ( txdRes = stUnusedTexDicts.First.Value ).LastUsedTime ).Seconds > ResourceDisposeDelay )
+            while ( stUnusedTexDicts.Count > 0 )
             {
-                txdRes.Value.Dispose();
-                stLoadedTexDicts.Remove( txdRes.Value.Name );
+                Resource<TextureDictionary> res = stUnusedTexDicts.First.Value;
+                if ( res.Used )
+                {
+                    stUnusedTexDicts.RemoveFirst();
+                    continue;
+                }
+
+                if ( ( now - res.LastUsedTime ).Seconds < ResourceDisposeDelay )
+                    break;
+
+                DisposeTextureDictionary( res.Value );
+
+                stLoadedTexDicts.Remove( res.Value.Name );
                 stUnusedTexDicts.RemoveFirst();
             }
+        }
+
+        public static void CheckGLDisposals()
+        {
+            lock ( stVBDisposals )
+                while ( stVBDisposals.Count > 0 )
+                    stVBDisposals.Dequeue().Dispose();
+
+            lock ( stTDDisposals )
+                while ( stTDDisposals.Count > 0 )
+                    stTDDisposals.Dequeue().Dispose();
+        }
+
+        public static void DisposeVertexBuffer( VertexBuffer vb )
+        {
+            lock ( stVBDisposals )
+                stVBDisposals.Enqueue( vb );
+        }
+
+        public static void DisposeTextureDictionary( TextureDictionary txd )
+        {
+            lock ( stTDDisposals )
+                stTDDisposals.Enqueue( txd );
         }
 
         public static void UnloadAll()
@@ -205,9 +323,14 @@ namespace GTAMapViewer.Resource
             stUnusedTexDicts.Clear();
         }
 
-        public static Model LoadModel( String name, String txdName )
+        public static void RequestModel( ObjectDefinition target )
         {
-            name = name.ToLower();
+            lock ( stThreadJobs )
+                stThreadJobs.Enqueue( new Job( JobType.LoadModel, target ) );
+        }
+
+        private static Model LoadModel( String name, String txdName )
+        {
             String fileName = name + ".dff";
 
             Resource<Model> res = null;
@@ -244,14 +367,19 @@ namespace GTAMapViewer.Resource
             return res.Value;
         }
 
-        public static void UnloadModel( String name, String txdName )
+        public static void UnloadModel( ObjectDefinition target )
         {
-            name = name.ToLower();
+            lock ( stThreadJobs )
+                stThreadJobs.Enqueue( new Job( JobType.UnloadModel, target ) );
+        }
+
+        private static void UnloadModel( String name )
+        {
             Resource<Model> res = stLoadedModels[ name ];
             --res.Uses;
 
-            if( res.Uses < 0 )
-                throw new Exception( "You done messes up" );
+            if ( res.Uses < 0 )
+                throw new Exception( "You done messed up" );
 
             if ( !res.Used )
                 stUnusedModels.AddLast( res );
@@ -259,53 +387,63 @@ namespace GTAMapViewer.Resource
 
         public static TextureDictionary LoadTextureDictionary( String name )
         {
-            name = name.ToLower();
-            String fileName = name + ".txd";
-
-            Resource<TextureDictionary> res = null;
-
-            if ( !stLoadedTexDicts.ContainsKey( name ) )
+            if ( stManagerThread == null || Thread.CurrentThread == stManagerThread )
             {
-                foreach ( ImageArchive archive in stLoadedArchives )
+                name = name.ToLower();
+                String fileName = name + ".txd";
+
+                Resource<TextureDictionary> res = null;
+
+                if ( !stLoadedTexDicts.ContainsKey( name ) )
                 {
-                    if ( archive.ContainsFile( fileName ) )
+                    foreach ( ImageArchive archive in stLoadedArchives )
                     {
-                        stTexTimer.Start();
-                        res = new Resource<TextureDictionary>( new TextureDictionary( name, archive.ReadFile( fileName ) ) );
-                        stTexTimer.Stop();
-                        break;
+                        if ( archive.ContainsFile( fileName ) )
+                        {
+                            stTexTimer.Start();
+                            res = new Resource<TextureDictionary>( new TextureDictionary( name, archive.ReadFile( fileName ) ) );
+                            stTexTimer.Stop();
+                            break;
+                        }
                     }
+
+                    if ( res == null )
+                        throw new KeyNotFoundException( "File with name \"" + fileName + "\" not present in a loaded archive." );
+
+                    stLoadedTexDicts.Add( name, res );
+                }
+                else
+                {
+                    res = stLoadedTexDicts[ name ];
+
+                    if ( !res.Used )
+                        stUnusedTexDicts.Remove( res );
                 }
 
-                if ( res == null )
-                    throw new KeyNotFoundException( "File with name \"" + fileName + "\" not present in a loaded archive." );
+                ++res.Uses;
 
-                stLoadedTexDicts.Add( name, res );
+                return res.Value;
             }
             else
-            {
-                res = stLoadedTexDicts[ name ];
-
-                if ( !res.Used )
-                    stUnusedTexDicts.Remove( res );
-            }
-
-            ++res.Uses;
-
-            return res.Value;
+                throw new Exception( "Texture dictionaries can only be loaded from the resource manager thread." );
         }
 
         public static void UnloadTextureDictionary( String name )
         {
-            name = name.ToLower();
-            Resource<TextureDictionary> res = stLoadedTexDicts[ name ];
-            --res.Uses;
+            if ( stManagerThread == null || Thread.CurrentThread == stManagerThread )
+            {
+                name = name.ToLower();
+                Resource<TextureDictionary> res = stLoadedTexDicts[ name ];
+                --res.Uses;
 
-            if ( res.Uses < 0 )
-                throw new Exception( "You done messes up" );
+                if ( res.Uses < 0 )
+                    throw new Exception( "You done messed up" );
 
-            if ( !res.Used )
-                stUnusedTexDicts.AddLast( res );
+                if ( !res.Used )
+                    stUnusedTexDicts.AddLast( res );
+            }
+            else
+                throw new Exception( "Texture dictionaries can only be unloaded from the resource manager thread." );
         }
     }
 }

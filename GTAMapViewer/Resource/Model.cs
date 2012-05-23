@@ -34,11 +34,19 @@ namespace GTAMapViewer.Resource
             }
             myGeometry = geos.ToArray();
 
-            VertexBuffer = new VertexBuffer( 9 );
-            if ( myGeometry.Length > 0 )
+            VertexBuffer = null;
+        }
+
+        public void SetupVertexBuffer()
+        {
+            if ( VertexBuffer == null )
             {
-                GeometrySectionData geo = myGeometry[ 0 ];
-                VertexBuffer.SetData( geo.GetVertices(), geo.GetIndices() );
+                VertexBuffer = new VertexBuffer( 9 );
+                if ( myGeometry.Length > 0 )
+                {
+                    GeometrySectionData geo = myGeometry[ 0 ];
+                    VertexBuffer.SetData( geo.GetVertices(), geo.GetIndices() );
+                }
             }
         }
 
@@ -86,7 +94,10 @@ namespace GTAMapViewer.Resource
         public void Dispose()
         {
             ResourceManager.UnloadTextureDictionary( TextureDict.Name );
-            VertexBuffer.Dispose();
+
+            lock ( this )
+                if ( VertexBuffer != null )
+                        ResourceManager.DisposeVertexBuffer( VertexBuffer );
         }
     }
 }

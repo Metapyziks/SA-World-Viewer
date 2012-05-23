@@ -321,6 +321,11 @@ namespace GTAMapViewer.Graphics
             {
                 if ( myCurrentModel != null )
                     myCurrentModel.VertexBuffer.EndBatch( this );
+
+                lock( model )
+                    if ( model.VertexBuffer == null )
+                        model.SetupVertexBuffer();
+
                 model.VertexBuffer.StartBatch( this );
                 myCurrentModel = model;
             }

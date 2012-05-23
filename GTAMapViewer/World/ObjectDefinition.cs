@@ -10,10 +10,18 @@ namespace GTAMapViewer.World
 {
     internal class ObjectDefinition
     {
+        private int myUses;
+
         public readonly String ModelName;
         public readonly String TextureDictName;
 
         public Model Model
+        {
+            get;
+            set;
+        }
+
+        public bool ModelRequested
         {
             get;
             private set;
@@ -21,8 +29,7 @@ namespace GTAMapViewer.World
 
         public bool Loaded
         {
-            get;
-            private set;
+            get { return Model != null; }
         }
 
         public RenderLayer RenderLayer
@@ -39,6 +46,21 @@ namespace GTAMapViewer.World
         public readonly float DrawDist2;
         public readonly ObjectFlag Flags;
 
+        public int Uses
+        {
+            get { return myUses; }
+            set
+            {
+                if ( myUses != value )
+                {
+                    myUses = value;
+
+                    if ( value == 0 && ModelRequested )
+                        Unload();
+                }
+            }
+        }
+
         public ObjectDefinition( String model, String txd, float drawDist, ObjectFlag flags )
         {
             ModelName = model;
@@ -47,7 +69,7 @@ namespace GTAMapViewer.World
             DrawDist2 = DrawDist * DrawDist;
             Flags = flags;
 
-            Loaded = false;
+            ModelRequested = false;
         }
 
         public bool HasFlags( ObjectFlag flag )
@@ -55,17 +77,23 @@ namespace GTAMapViewer.World
             return ( Flags & flag ) == flag;
         }
 
-        public void Load()
+        public void RequestModel()
         {
-            Model = ResourceManager.LoadModel( ModelName, TextureDictName );
-            Loaded = true;
+            if ( !ModelRequested )
+            {
+                ModelRequested = true;
+                ResourceManager.RequestModel( this );
+            }
         }
 
         public void Unload()
         {
-            ResourceManager.UnloadModel( ModelName, TextureDictName );
-            Model = null;
-            Loaded = false;
+            if ( ModelRequested )
+            {
+                Model = null;
+                ModelRequested = false;
+                ResourceManager.UnloadModel( this );
+            }
         }
     }
 }

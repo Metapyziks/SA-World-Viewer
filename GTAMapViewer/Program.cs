@@ -31,9 +31,12 @@ namespace GTAMapViewer
                 return;
             }
 
+            ResourceManager.StartThread();
             ViewerWindow window = new ViewerWindow();
             window.Run();
+            ResourceManager.StopThread();
             window.Dispose();
+            ResourceManager.UnloadAll();
         }
     }
 }

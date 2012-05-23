@@ -109,7 +109,7 @@ namespace GTAMapViewer.Scenes
                     * ( Keyboard[ Key.ShiftLeft ] ? 4.0f : 1.0f );
             }
 
-            ResourceManager.CheckUnusedResources();
+            ResourceManager.CheckGLDisposals();
         }
 
         public override void OnMouseMove( MouseMoveEventArgs e )

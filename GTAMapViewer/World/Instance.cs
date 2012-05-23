@@ -8,6 +8,8 @@ namespace GTAMapViewer.World
 {
     internal class Instance
     {
+        private bool myVisible;
+
         public ObjectDefinition Object
         {
             get;
@@ -41,6 +43,23 @@ namespace GTAMapViewer.World
             private set;
         }
 
+        public bool Culled
+        {
+            get { return !myVisible; }
+            set
+            {
+                if ( value == myVisible )
+                {
+                    myVisible = !value;
+
+                    if ( value )
+                        --Object.Uses;
+                    else
+                        ++Object.Uses;
+                }
+            }
+        }
+
         public Instance( InstPlacement placement )
         {
             Object = placement.Object;
@@ -58,8 +77,10 @@ namespace GTAMapViewer.World
             if ( ( Object.DrawDist >= 300.0f && !HasLOD && dist2 < shader.ViewRange2 ) ||
                 dist2 < Object.DrawDist2 )
             {
-                if ( !Object.Loaded )
-                    Object.Load();
+                Culled = false;
+
+                if ( !Object.Loaded && !Object.ModelRequested )
+                    Object.RequestModel();
 
                 if ( Object.Model != null )
                 {
@@ -69,11 +90,12 @@ namespace GTAMapViewer.World
 
                     shader.Render( Object.Model );
                 }
+                else if ( HasLOD )
+                    LOD.Render( shader );
             }
             else
             {
-                if ( Object.Loaded )
-                    Object.Unload();
+                Culled = true;
 
                 if ( HasLOD )
                     LOD.Render( shader );
