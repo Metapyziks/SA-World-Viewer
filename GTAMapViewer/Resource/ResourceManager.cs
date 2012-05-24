@@ -78,6 +78,8 @@ namespace GTAMapViewer.Resource
             }
         }
 
+        private delegate void TexDictLoadedDelegate( TextureDictionary txd );
+
         private class ImageArchive
         {
             private struct ImageArchiveEntry
@@ -126,7 +128,7 @@ namespace GTAMapViewer.Resource
                 }
 
                 List<String> keys = new List<string>();
-                keys.AddRange( myFileDict.Keys.Where( x => x.EndsWith( ".ipl" ) ) );
+                keys.AddRange( myFileDict.Keys.Where( x => x.EndsWith( ".txd" ) && x.Contains( "wat" ) ) );
             }
 
             public bool ContainsFile( String name )
@@ -158,7 +160,7 @@ namespace GTAMapViewer.Resource
         private static Stopwatch stTexTimer = new Stopwatch();
 
         private static Thread stManagerThread;
-        private static Queue<Job> stThreadJobs;
+        private static LinkedList<Job> stThreadJobs;
         private static bool stStopThread;
 
         private static Queue<VertexBuffer> stVBDisposals = new Queue<VertexBuffer>();
@@ -184,7 +186,7 @@ namespace GTAMapViewer.Resource
                 return;
 
             stStopThread = false;
-            stThreadJobs = new Queue<Job>();
+            stThreadJobs = new LinkedList<Job>();
             stManagerThread = new Thread( ThreadEntry );
             stManagerThread.Start();
         }
@@ -201,12 +203,19 @@ namespace GTAMapViewer.Resource
             {
                 Job job = null;
                 lock ( stThreadJobs )
+                {
                     if ( stThreadJobs.Count > 0 )
-                        job = stThreadJobs.Dequeue();
+                    {
+                        job = stThreadJobs.First();
+                        stThreadJobs.RemoveFirst();
+                    }
+                }
 
                 if ( job != null )
                 {
                     ObjectDefinition targ;
+                    String name;
+                    TexDictLoadedDelegate callback;
                     switch ( job.Type )
                     {
                         case JobType.LoadModel:
@@ -216,6 +225,15 @@ namespace GTAMapViewer.Resource
                         case JobType.UnloadModel:
                             targ = job.Args[ 0 ] as ObjectDefinition;
                             UnloadModel( targ.ModelName.ToLower() );
+                            break;
+                        case JobType.LoadTexDict:
+                            name = job.Args[ 0 ] as String;
+                            callback = job.Args[ 1 ] as TexDictLoadedDelegate;
+                            callback( LoadTextureDictionary( name ) );
+                            break;
+                        case JobType.UnloadTexDict:
+                            name = job.Args[ 0 ] as String;
+                            UnloadTextureDictionary( name );
                             break;
                     }
                 }
@@ -326,7 +344,7 @@ namespace GTAMapViewer.Resource
         public static void RequestModel( ObjectDefinition target )
         {
             lock ( stThreadJobs )
-                stThreadJobs.Enqueue( new Job( JobType.LoadModel, target ) );
+                stThreadJobs.AddLast( new Job( JobType.LoadModel, target ) );
         }
 
         private static Model LoadModel( String name, String txdName )
@@ -370,7 +388,7 @@ namespace GTAMapViewer.Resource
         public static void UnloadModel( ObjectDefinition target )
         {
             lock ( stThreadJobs )
-                stThreadJobs.Enqueue( new Job( JobType.UnloadModel, target ) );
+                stThreadJobs.AddLast( new Job( JobType.UnloadModel, target ) );
         }
 
         private static void UnloadModel( String name )
@@ -425,7 +443,23 @@ namespace GTAMapViewer.Resource
                 return res.Value;
             }
             else
-                throw new Exception( "Texture dictionaries can only be loaded from the resource manager thread." );
+            {
+                TextureDictionary txd = null;
+                bool loaded = false;
+                TexDictLoadedDelegate del = delegate( TextureDictionary loadedTxd )
+                {
+                    txd = loadedTxd;
+                    loaded = true;
+                };
+
+                lock ( stThreadJobs )
+                    stThreadJobs.AddFirst( new Job( JobType.LoadTexDict, name, del ) );
+
+                while ( !loaded )
+                    Thread.Yield();
+
+                return txd;
+            }
         }
 
         public static void UnloadTextureDictionary( String name )
@@ -443,7 +477,10 @@ namespace GTAMapViewer.Resource
                     stUnusedTexDicts.AddLast( res );
             }
             else
-                throw new Exception( "Texture dictionaries can only be unloaded from the resource manager thread." );
+            {
+                lock ( stThreadJobs )
+                    stThreadJobs.AddLast( new Job( JobType.UnloadTexDict, name ) );
+            }
         }
     }
 }
