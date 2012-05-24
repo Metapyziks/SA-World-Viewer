@@ -18,8 +18,15 @@ namespace GTAMapViewer.Scenes
     {
         private const float CameraMoveSpeed = 16.0f;
 
+        private static readonly float[] stZoomLevels = new float[]
+        {
+            512.0f, 1024.0f, 2048.0f, 3072.0f, 4096.0f, 8192.0f, 16384.0f
+        };
+
         private ModelShader myShader;
         private Cell myCell;
+
+        private int myCurZoomLevel;
 
         private bool myIgnoreMouse;
         private bool myCaptureMouse;
@@ -29,6 +36,8 @@ namespace GTAMapViewer.Scenes
         {
             myIgnoreMouse = false;
             myCaptureMouse = true;
+
+            myCurZoomLevel = 2;
         }
 
         public override void OnEnter( bool firstTime )
@@ -56,6 +65,12 @@ namespace GTAMapViewer.Scenes
         public override void OnExit()
         {
             CursorVisible = true;
+        }
+
+        public override void OnMouseWheelChanged( MouseWheelEventArgs e )
+        {
+            myCurZoomLevel = ( myCurZoomLevel + e.Delta + stZoomLevels.Length ) % stZoomLevels.Length;
+            myShader.ViewRange = stZoomLevels[ myCurZoomLevel ];
         }
 
         public override void OnKeyPress( KeyPressEventArgs e )
@@ -106,7 +121,8 @@ namespace GTAMapViewer.Scenes
             {
                 movement.Normalize();
                 myShader.CameraPosition = myShader.CameraPosition + movement * CameraMoveSpeed * (float) e.Time
-                    * ( Keyboard[ Key.ShiftLeft ] ? 4.0f : 1.0f );
+                    * ( Keyboard[ Key.ShiftLeft ] ? 4.0f : 1.0f )
+                    * stZoomLevels[ myCurZoomLevel ] / 512.0f;
             }
 
             ResourceManager.CheckGLDisposals();

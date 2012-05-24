@@ -212,7 +212,7 @@ namespace GTAMapViewer.Graphics
                         discard;
                     if( flag_mask && texture2D( tex_mask, var_texcoord ).a < 0.5 )
                         discard;
-                    out_frag_colour = vec4( mix( fog_colour, clr.rgb * var_colour.rgb, var_fogfactor ), var_colour.a );
+                    out_frag_colour = vec4( mix( fog_colour, clr.rgb * var_colour.rgb, var_fogfactor ), clr.a * var_colour.a );
                 }
             ";
 
@@ -227,7 +227,7 @@ namespace GTAMapViewer.Graphics
             myColour = Color4.White;
             myAlphaMask = false;
 
-            myViewRange = 1536.0f;
+            myViewRange = 2048.0f;
             ViewRange2 = myViewRange * myViewRange;
 
             myPerspectiveChanged = true;

@@ -180,9 +180,9 @@ namespace GTAMapViewer.Graphics
 
             MinFilter = FindMinFilter( tex.FilterFlags );
 
-            MipMapCount = 1; //tex.MipMapCount;
+            MipMapCount = 1; // tex.MipMapCount;
             ContainsMipMaps = ( tex.Format & TextureNativeSectionData.RasterFormat.ExtMipMap ) != 0;
-            GenerateMipMaps = ( tex.Format & TextureNativeSectionData.RasterFormat.ExtAutoMipMap ) != 0;
+            GenerateMipMaps = true; // ( tex.Format & TextureNativeSectionData.RasterFormat.ExtAutoMipMap ) != 0;
 
             ImageLevelSizes = new int[ MipMapCount ];
             for ( int i = 0; i < MipMapCount; ++i )
