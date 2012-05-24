@@ -15,11 +15,9 @@ namespace GTAMapViewer.Graphics
         Alpha2 = 2
     }
 
-    internal class ModelShader : ShaderProgram
+    internal class ModelShader : ShaderProgram3D
     {
         private Model myCurrentModel;
-
-        private int myViewMatrixLoc;
 
         private Vector3 myModelPos;
         private int myModelPosLoc;
@@ -107,12 +105,6 @@ namespace GTAMapViewer.Graphics
             }
         }
 
-        public Camera Camera
-        {
-            get;
-            set;
-        }
-
         public ModelShader()
         {
             ShaderBuilder vert = new ShaderBuilder( ShaderType.VertexShader, false );
@@ -177,19 +169,8 @@ namespace GTAMapViewer.Graphics
             myAlphaMask = false;
 
             myBackfaceCulling = false;
-        }
 
-        public ModelShader( int width, int height )
-            : this()
-        {
             Create();
-            SetScreenSize( width, height );
-        }
-
-        public void SetScreenSize( int width, int height )
-        {
-            ScreenWidth = width;
-            ScreenHeight = height;
         }
 
         protected override void OnCreate()
@@ -203,7 +184,6 @@ namespace GTAMapViewer.Graphics
             AddTexture( "tex_diffuse", TextureUnit.Texture0 );
             AddTexture( "tex_mask", TextureUnit.Texture1 );
 
-            myViewMatrixLoc = GL.GetUniformLocation( Program, "view_matrix" );
             myModelPosLoc = GL.GetUniformLocation( Program, "model_pos" );
             myModelRotLoc = GL.GetUniformLocation( Program, "model_rot" );
             myColourLoc = GL.GetUniformLocation( Program, "colour" );
@@ -218,12 +198,10 @@ namespace GTAMapViewer.Graphics
 
         protected override void OnStartBatch()
         {
+            base.OnStartBatch();
+
             if ( Camera != null )
-            {
-                Matrix4 viewMat = Camera.ViewMatrix;
-                GL.UniformMatrix4( myViewMatrixLoc, false, ref viewMat );
                 GL.Uniform1( myFogDensityLoc, 2.0f / Camera.ViewDistance );
-            }
 
             GL.Enable( EnableCap.DepthTest );
             GL.Enable( EnableCap.Blend );

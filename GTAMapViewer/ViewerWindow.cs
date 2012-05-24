@@ -33,7 +33,7 @@ namespace GTAMapViewer
         }
 
         public ViewerWindow()
-            : base( 800, 600, new GraphicsMode( new ColorFormat( 8, 8, 8, 8 ), 16, 0, 4 ), "GTA SA Model Viewer" )
+            : base( 800, 600, new GraphicsMode( new ColorFormat( 8, 8, 8, 8 ), 16, 0 ), "GTA SA Model Viewer" )
         {
             VSync = VSyncMode.On;
             Context.SwapInterval = 1;

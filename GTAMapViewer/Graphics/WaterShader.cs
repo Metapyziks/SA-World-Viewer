@@ -5,8 +5,11 @@ using System.Text;
 
 namespace GTAMapViewer.Graphics
 {
-    internal class WaterShader : ShaderProgram
+    internal class WaterShader : ShaderProgram3D
     {
+        public WaterShader()
+        {
 
+        }
     }
 }

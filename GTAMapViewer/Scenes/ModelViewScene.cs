@@ -53,7 +53,7 @@ namespace GTAMapViewer.Scenes
             if ( firstTime )
             {
                 myCamera = new Camera( MathHelper.Pi / 3.0f, (float) Width / (float) Height, stViewDists[ myCurViewDist ] );
-                myShader = new ModelShader( Width, Height );
+                myShader = new ModelShader();
                 myShader.Camera = myCamera;
                 myShader.FogColour = Color4.CornflowerBlue;
                 myCell = ItemManager.GetCell( 0 );
@@ -63,7 +63,7 @@ namespace GTAMapViewer.Scenes
 
         public override void OnResize()
         {
-            myShader.SetScreenSize( Width, Height );
+            myCamera.ScreenRatio = (float) Width / (float) Height;
             GL.Viewport( GameWindow.ClientRectangle );
         }
 

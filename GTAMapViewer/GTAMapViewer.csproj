@@ -53,6 +53,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Graphics\Camera.cs" />
+    <Compile Include="Graphics\ShaderProgram3D.cs" />
     <Compile Include="Graphics\TextureDictionary.cs" />
     <Compile Include="Graphics\WaterShader.cs" />
     <Compile Include="World\Cell.cs" />
