@@ -19,7 +19,6 @@ namespace GTAMapViewer.Graphics
     {
         private Model myCurrentModel;
 
-        private Matrix4 myViewMatrix;
         private int myViewMatrixLoc;
 
         private Vector3 myModelPos;
@@ -38,64 +37,11 @@ namespace GTAMapViewer.Graphics
         private bool myAlphaMask;
         private int myAlphaMaskLoc;
 
-        private Vector3 myCameraPosition;
-        private Vector2 myCameraRotation;
-        private Matrix4 myPerspectiveMatrix;
-        private float myViewRange;
-
-        private bool myPerspectiveChanged;
-        private bool myViewChanged;
-
         private bool myBackfaceCulling;
 
         public int ScreenWidth { get; private set; }
         public int ScreenHeight { get; private set; }
 
-        public Vector3 CameraPosition
-        {
-            get
-            {
-                return myCameraPosition;
-            }
-            set
-            {
-                myCameraPosition = value;
-                myViewChanged = true;
-            }
-        }
-        public Vector2 CameraRotation
-        {
-            get { return myCameraRotation; }
-            set
-            {
-                myCameraRotation = value;
-                myViewChanged = true;
-            }
-        }
-        public Matrix4 PerspectiveMatrix
-        {
-            get { return myPerspectiveMatrix; }
-            set
-            {
-                myPerspectiveMatrix = value;
-                myPerspectiveChanged = true;
-            }
-        }
-        public float ViewRange
-        {
-            get { return myViewRange; }
-            set
-            {
-                myViewRange = value;
-                ViewRange2 = value * value;
-                myPerspectiveChanged = true;
-            }
-        }
-        public float ViewRange2
-        {
-            get;
-            private set;
-        }
         public Vector3 ModelPos
         {
             get { return myModelPos; }
@@ -161,6 +107,12 @@ namespace GTAMapViewer.Graphics
             }
         }
 
+        public Camera Camera
+        {
+            get;
+            set;
+        }
+
         public ModelShader()
         {
             ShaderBuilder vert = new ShaderBuilder( ShaderType.VertexShader, false );
@@ -221,17 +173,8 @@ namespace GTAMapViewer.Graphics
 
             BeginMode = BeginMode.TriangleStrip;
 
-            myCameraPosition = new Vector3();
-            myCameraRotation = new Vector2( MathHelper.Pi * 30.0f / 180.0f, 0.0f );
-
             myColour = Color4.White;
             myAlphaMask = false;
-
-            myViewRange = 2048.0f;
-            ViewRange2 = myViewRange * myViewRange;
-
-            myPerspectiveChanged = true;
-            myViewChanged = true;
 
             myBackfaceCulling = false;
         }
@@ -247,7 +190,6 @@ namespace GTAMapViewer.Graphics
         {
             ScreenWidth = width;
             ScreenHeight = height;
-            UpdatePerspectiveMatrix();
         }
 
         protected override void OnCreate()
@@ -274,35 +216,14 @@ namespace GTAMapViewer.Graphics
             AlphaMask = false;
         }
 
-        private void UpdatePerspectiveMatrix()
-        {
-            PerspectiveMatrix = Matrix4.CreatePerspectiveFieldOfView( (float) Math.PI * ( 60.0f / 180.0f ),
-                (float) ScreenWidth / (float) ScreenHeight, 0.125f, myViewRange );
-            UpdateViewMatrix();
-
-            GL.Uniform1( myFogDensityLoc, 2.0f / ViewRange );
-
-            myPerspectiveChanged = false;
-        }
-
-        private void UpdateViewMatrix()
-        {
-            Matrix4 yRot = Matrix4.CreateRotationY( myCameraRotation.Y );
-            Matrix4 xRot = Matrix4.CreateRotationX( myCameraRotation.X );
-            Matrix4 trns = Matrix4.CreateTranslation( -myCameraPosition );
-
-            myViewMatrix = Matrix4.Mult( Matrix4.Mult( Matrix4.Mult( trns, yRot ), xRot ), myPerspectiveMatrix );
-            GL.UniformMatrix4( myViewMatrixLoc, false, ref myViewMatrix );
-
-            myViewChanged = false;
-        }
-
         protected override void OnStartBatch()
         {
-            if ( myPerspectiveChanged )
-                UpdatePerspectiveMatrix();
-            else if ( myViewChanged )
-                UpdateViewMatrix();
+            if ( Camera != null )
+            {
+                Matrix4 viewMat = Camera.ViewMatrix;
+                GL.UniformMatrix4( myViewMatrixLoc, false, ref viewMat );
+                GL.Uniform1( myFogDensityLoc, 2.0f / Camera.ViewDistance );
+            }
 
             GL.Enable( EnableCap.DepthTest );
             GL.Enable( EnableCap.Blend );

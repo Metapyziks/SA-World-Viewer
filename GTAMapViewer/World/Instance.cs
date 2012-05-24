@@ -72,9 +72,9 @@ namespace GTAMapViewer.World
 
         public void Render( ModelShader shader )
         {
-            float dist2 = ( shader.CameraPosition - Position ).LengthSquared;
+            float dist2 = ( shader.Camera.Position - Position ).LengthSquared;
 
-            if ( ( Object.DrawDist >= 300.0f && !HasLOD && dist2 < shader.ViewRange2 ) ||
+            if ( ( Object.DrawDist >= 300.0f && !HasLOD && dist2 < shader.Camera.ViewDistance2 ) ||
                 dist2 < Object.DrawDist2 )
             {
                 Culled = false;

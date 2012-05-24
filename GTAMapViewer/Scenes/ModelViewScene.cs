@@ -18,15 +18,17 @@ namespace GTAMapViewer.Scenes
     {
         private const float CameraMoveSpeed = 16.0f;
 
-        private static readonly float[] stZoomLevels = new float[]
+        private static readonly float[] stViewDists = new float[]
         {
-            512.0f, 1024.0f, 2048.0f, 3072.0f, 4096.0f, 8192.0f, 16384.0f
+            512.0f, 1024.0f, 2048.0f, 3072.0f, 4096.0f, 8192.0f, 16384.0f, 32768.0f
         };
 
+        private Camera myCamera;
         private ModelShader myShader;
         private Cell myCell;
+        private TextureDictionary myTexDict;
 
-        private int myCurZoomLevel;
+        private int myCurViewDist;
 
         private bool myIgnoreMouse;
         private bool myCaptureMouse;
@@ -37,7 +39,7 @@ namespace GTAMapViewer.Scenes
             myIgnoreMouse = false;
             myCaptureMouse = true;
 
-            myCurZoomLevel = 2;
+            myCurViewDist = 2;
         }
 
         public override void OnEnter( bool firstTime )
@@ -50,9 +52,12 @@ namespace GTAMapViewer.Scenes
 
             if ( firstTime )
             {
+                myCamera = new Camera( MathHelper.Pi / 3.0f, (float) Width / (float) Height, stViewDists[ myCurViewDist ] );
                 myShader = new ModelShader( Width, Height );
+                myShader.Camera = myCamera;
                 myShader.FogColour = Color4.CornflowerBlue;
                 myCell = ItemManager.GetCell( 0 );
+                myTexDict = ResourceManager.LoadTextureDictionary( "ballyswater" );
             }
         }
 
@@ -69,8 +74,9 @@ namespace GTAMapViewer.Scenes
 
         public override void OnMouseWheelChanged( MouseWheelEventArgs e )
         {
-            myCurZoomLevel = ( myCurZoomLevel + e.Delta + stZoomLevels.Length ) % stZoomLevels.Length;
-            myShader.ViewRange = stZoomLevels[ myCurZoomLevel ];
+            myCurViewDist = ( myCurViewDist + e.Delta + stViewDists.Length ) % stViewDists.Length;
+            myCamera.ViewDistance = stViewDists[ myCurViewDist ];
+            myCamera.UpdatePerspectiveMatrix();
         }
 
         public override void OnKeyPress( KeyPressEventArgs e )
@@ -91,8 +97,8 @@ namespace GTAMapViewer.Scenes
         public override void OnUpdateFrame( OpenTK.FrameEventArgs e )
         {
             Vector3 movement = new Vector3( 0.0f, 0.0f, 0.0f );
-            float angleY = myShader.CameraRotation.Y;
-            float angleX = myShader.CameraRotation.X;
+            float angleY = myCamera.Rotation.Y;
+            float angleX = myCamera.Rotation.X;
 
             if ( Keyboard[ Key.D ] )
             {
@@ -120,9 +126,9 @@ namespace GTAMapViewer.Scenes
             if ( movement.Length != 0 )
             {
                 movement.Normalize();
-                myShader.CameraPosition = myShader.CameraPosition + movement * CameraMoveSpeed * (float) e.Time
+                myCamera.Position = myCamera.Position + movement * CameraMoveSpeed * (float) e.Time
                     * ( Keyboard[ Key.ShiftLeft ] ? 4.0f : 1.0f )
-                    * stZoomLevels[ myCurZoomLevel ] / 512.0f;
+                    * stViewDists[ myCurViewDist ] / 512.0f;
             }
 
             ResourceManager.CheckGLDisposals();
@@ -138,13 +144,13 @@ namespace GTAMapViewer.Scenes
 
             if ( myCaptureMouse )
             {
-                Vector2 rot = myShader.CameraRotation;
+                Vector2 rot = myCamera.Rotation;
 
                 rot.Y += e.XDelta / 180.0f;
                 rot.X += e.YDelta / 180.0f;
                 rot.X = Tools.Clamp( rot.X, (float) -Math.PI / 2.0f, (float) Math.PI / 2.0f );
 
-                myShader.CameraRotation = rot;
+                myCamera.Rotation = rot;
 
                 myIgnoreMouse = true;
                 System.Windows.Forms.Cursor.Position = new System.Drawing.Point( Bounds.Left + Width / 2, Bounds.Top + Height / 2 );
@@ -153,6 +159,8 @@ namespace GTAMapViewer.Scenes
 
         public override void OnRenderFrame( OpenTK.FrameEventArgs e )
         {
+            myCamera.UpdateViewMatrix();
+
             myShader.StartBatch();
             myCell.Render( myShader, RenderLayer.Base );
             myCell.Render( myShader, RenderLayer.Alpha1 );

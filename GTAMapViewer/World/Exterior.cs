@@ -146,10 +146,10 @@ namespace GTAMapViewer.World
             {
                 ExteriorBlock blk = myInstGrid[ x, z ];
 
-                rx = blk.CenterPos.X - shader.CameraPosition.X;
-                rz = blk.CenterPos.Y - shader.CameraPosition.Z;
+                rx = blk.CenterPos.X - shader.Camera.Position.X;
+                rz = blk.CenterPos.Y - shader.Camera.Position.Z;
 
-                if ( ( rx * rx + rz * rz ) < shader.ViewRange2 + blk.Radius2 )
+                if ( ( rx * rx + rz * rz ) < shader.Camera.ViewDistance2 + blk.Radius2 )
                     blk.Render( shader, layer );
             }
         }
